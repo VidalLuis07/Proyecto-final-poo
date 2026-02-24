@@ -4,11 +4,16 @@ import edu.trespor2.videojuego.model.entidades.Entidad;
 
 public class Tile extends Entidad {
 
-    private boolean transitable;
+    // ── Tipo de tile ───────────────────────────────────────────────────────
+    public enum TipoTile { VACIO, PARED, PISO }
 
-    public Tile(double x, double y, boolean transitable) {
+    private boolean transitable;
+    private TipoTile tipo;
+
+    public Tile(double x, double y, boolean transitable, TipoTile tipo) {
         super(x, y, 16, 16);
         this.transitable = transitable;
+        this.tipo = tipo;
     }
 
     public boolean isTransitable() {
@@ -17,5 +22,13 @@ public class Tile extends Entidad {
 
     public void setTransitable(boolean transitable) {
         this.transitable = transitable;
+    }
+
+    public TipoTile getTipo() {
+        return tipo;
+    }
+
+    public void setTipo(TipoTile tipo) {
+        this.tipo = tipo;
     }
 }

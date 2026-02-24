@@ -13,7 +13,14 @@ public class Dungeon {
     private final int FILAS = 5;
     private final int COLUMNAS = 5;
 
-    public Dungeon() {
+    // Tamaño de sala en tiles (se recibe desde GameLoop)
+    private final int colsSala;
+    private final int filasSala;
+
+    public Dungeon(int colsSala, int filasSala) {
+        this.colsSala  = colsSala;
+        this.filasSala = filasSala;
+
         this.gridSalas = new Room[COLUMNAS][FILAS];
         this.todasLasSalas = new ArrayList<>();
         generarMapaAleatorio();
@@ -25,7 +32,7 @@ public class Dungeon {
         int totalSalasObjetivo = rand.nextInt(3) + 7;
         int salasCreadas = 0;
 
-        Room salaInicial = new Room(15, 10);
+        Room salaInicial = new Room(colsSala, filasSala);
         salaInicial.setTipo(Room.TipoSala.INICIO);
         gridSalas[2][2] = salaInicial;
         todasLasSalas.add(salaInicial);
@@ -53,11 +60,10 @@ public class Dungeon {
 
             if (nuevoX >= 0 && nuevoX < COLUMNAS && nuevoY >= 0 && nuevoY < FILAS) {
                 if (gridSalas[nuevoX][nuevoY] == null) {
-                    Room nuevaSala = new Room(15, 10);
+                    Room nuevaSala = new Room(colsSala, filasSala);
                     gridSalas[nuevoX][nuevoY] = nuevaSala;
                     todasLasSalas.add(nuevaSala);
                     salasDisponibles.add(new Coordenada(nuevoX, nuevoY, nuevaSala));
-
 
                     if (salasCreadas == totalSalasObjetivo - 1) {
                         salaParaJefe = nuevaSala;
@@ -84,7 +90,7 @@ public class Dungeon {
             }
         }
 
-        System.out.println("¡Mazmorra generada con " + totalSalasObjetivo + " salas!");
+        System.out.println("¡Mazmorra generada con " + totalSalasObjetivo + " salas! (sala: " + colsSala + "x" + filasSala + ")");
     }
 
 

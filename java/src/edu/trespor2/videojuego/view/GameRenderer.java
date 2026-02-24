@@ -69,8 +69,9 @@ public class GameRenderer {
 
     // ══════════════════════════════════════════════════════════════════════
     //  TILES
-    //  CAPA 1 → tile_vacio cubre TODA la pantalla (el "espacio" exterior)
-    //  CAPA 2 → encima se dibuja la sala: pared en bordes, piso en interior
+    //  - VACIO  → tile_vacio  (borde exterior de 2 tiles)
+    //  - PARED  → tile_pared  (una capa de pared)
+    //  - PISO   → tile_piso   (todo el interior)
     // ══════════════════════════════════════════════════════════════════════
     private void dibujarTiles(GraphicsContext gc, Tile[][] tiles,
                               double anchoCanvas, double altoCanvas) {
@@ -79,7 +80,7 @@ public class GameRenderer {
         Image imgPiso  = sprites.getImagen("tile_piso");
         Image imgPared = sprites.getImagen("tile_pared");
 
-        // ── CAPA 1: tile_vacio cubre toda la pantalla ──────────────────
+        // ── CAPA 1: tile_vacio cubre toda la pantalla (fondo) ──────────
         int colsCanvas  = (int) Math.ceil(anchoCanvas / TILE_SIZE);
         int filasCanvas = (int) Math.ceil(altoCanvas  / TILE_SIZE);
 
@@ -91,14 +92,13 @@ public class GameRenderer {
                 if (imgVacio != null) {
                     gc.drawImage(imgVacio, px, py, TILE_SIZE, TILE_SIZE);
                 } else {
-                    // Fallback: negro si no cargó la imagen
                     gc.setFill(Color.BLACK);
                     gc.fillRect(px, py, TILE_SIZE, TILE_SIZE);
                 }
             }
         }
 
-        // ── CAPA 2: sala (pared + piso) encima del vacío ───────────────
+        // ── CAPA 2: sala encima del fondo ──────────────────────────────
         if (tiles == null) return;
 
         for (int col = 0; col < tiles.length; col++) {
@@ -106,13 +106,21 @@ public class GameRenderer {
                 Tile tile = tiles[col][fila];
                 if (tile == null) continue;
 
-                Image img = tile.isTransitable() ? imgPiso : imgPared;
+                // Los tiles VACIO de la sala no se dibujan: se mezclan con el fondo
+                if (tile.getTipo() == Tile.TipoTile.VACIO) continue;
+
+                Image img;
+                switch (tile.getTipo()) {
+                    case PARED -> img = imgPared;
+                    case PISO  -> img = imgPiso;
+                    default    -> img = imgVacio;
+                }
 
                 if (img != null) {
                     gc.drawImage(img, tile.getX(), tile.getY(), TILE_SIZE, TILE_SIZE);
                 } else {
                     // Fallback con colores si no cargaron las imágenes
-                    gc.setFill(tile.isTransitable()
+                    gc.setFill(tile.getTipo() == Tile.TipoTile.PISO
                             ? Color.web("#4a3728")   // marrón oscuro = piso
                             : Color.web("#1a1a2e")); // azul muy oscuro = pared
                     gc.fillRect(tile.getX(), tile.getY(), TILE_SIZE, TILE_SIZE);

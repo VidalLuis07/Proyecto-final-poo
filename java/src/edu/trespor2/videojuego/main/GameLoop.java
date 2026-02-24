@@ -24,43 +24,41 @@ import java.util.List;
 
 public class GameLoop extends AnimationTimer {
 
-    // ── Estados posibles del juego ─────────────────────────────────────────
+    // ── Estados posibles del juego
     public enum Estado { MENU, JUGANDO, TIENDA, GAME_OVER }
     private Estado estadoActual = Estado.MENU;
 
-    // ── JavaFX ────────────────────────────────────────────────────────────
+    // ── JavaFX
     private final GraphicsContext gc;
     private final double ancho;
     private final double alto;
 
-    // ── Controladores ─────────────────────────────────────────────────────
+    // ── Controladores
     private final InputHandler inputHandler;
     private final CollisionManager collisionManager;
 
-    // ── Vista ─────────────────────────────────────────────────────────────
+    // ── Vista
     private final GameRenderer renderer;
     private final HUD hud;
     private final MenuScreen menuScreen;
     private final GameOverScreen gameOverScreen;
     private ShopScreen shopScreen;
 
-    // ── Modelo ────────────────────────────────────────────────────────────
+    // ── Modelo
     private Jugador jugador;
     private Dungeon dungeon;
     private List<Proyectiles> proyectiles;
 
-    // ── Control de tiempo ─────────────────────────────────────────────────
+    // ── Control de tiempo
     private long tiempoAnterior = -1;
 
-    // ── Mouse ─────────────────────────────────────────────────────────────
-    private double mouseX      = 0;   // posición actual (para hover)
-    private double mouseY      = 0;   // posición actual (para hover)
-    private double mouseClickX = -1;  // último clic
-    private double mouseClickY = -1;  // último clic
+    // ── Mouse
+    private double mouseX      = 0;
+    private double mouseY      = 0;
+    private double mouseClickX = -1;
+    private double mouseClickY = -1;
 
-    // ══════════════════════════════════════════════════════════════════════
     //  CONSTRUCTOR
-    // ══════════════════════════════════════════════════════════════════════
     public GameLoop(Canvas canvas, Scene scene) {
         this.gc    = canvas.getGraphicsContext2D();
         this.ancho = canvas.getWidth();
@@ -76,22 +74,19 @@ public class GameLoop extends AnimationTimer {
 
         SpriteManager.getInstance();
 
-        // Clic del mouse → guarda dónde fue el clic
         scene.addEventHandler(MouseEvent.MOUSE_CLICKED, e -> {
             mouseClickX = e.getX();
             mouseClickY = e.getY();
         });
 
-        // Movimiento del mouse → guarda posición actual (para efecto hover)
         scene.addEventHandler(MouseEvent.MOUSE_MOVED, e -> {
             mouseX = e.getX();
             mouseY = e.getY();
         });
     }
 
-    // ══════════════════════════════════════════════════════════════════════
     //  HANDLE — Se llama ~60 veces por segundo
-    // ══════════════════════════════════════════════════════════════════════
+
     @Override
     public void handle(long ahora) {
         if (tiempoAnterior < 0) { tiempoAnterior = ahora; return; }
@@ -105,16 +100,12 @@ public class GameLoop extends AnimationTimer {
             case GAME_OVER -> manejarGameOver();
         }
 
-        // Consumir clic para que no se procese dos veces
         mouseClickX = -1;
         mouseClickY = -1;
     }
 
-    // ══════════════════════════════════════════════════════════════════════
     //  ESTADOS
-    // ══════════════════════════════════════════════════════════════════════
     private void manejarMenu() {
-        // Le pasamos la posición del mouse para el efecto hover en los botones
         menuScreen.actualizarMouse(mouseX, mouseY);
         menuScreen.render(gc, ancho, alto);
 
@@ -129,6 +120,12 @@ public class GameLoop extends AnimationTimer {
 
     private void manejarJuego(double delta) {
         procesarInputJugador();
+
+        // Resolver colisión con paredes ANTES de mover al jugador
+        double[] dirAjustada = collisionManager.resolverColisionParedes(jugador, dungeon.getSalaActual());
+        jugador.setDx(dirAjustada[0]);
+        jugador.setDy(dirAjustada[1]);
+
         jugador.update(delta);
         dungeon.getSalaActual().getEnemigos().forEach(e -> e.update(delta));
 
@@ -172,19 +169,21 @@ public class GameLoop extends AnimationTimer {
         }
     }
 
-    // ══════════════════════════════════════════════════════════════════════
     //  UTILIDADES
-    // ══════════════════════════════════════════════════════════════════════
-    // DESPUÉS
     private void iniciarJuego(String personaje) {
 
-        // 1) Calcular offset ANTES de crear el Dungeon
-        Room.inicializarOffset(ancho, alto, 15, 10);
+        // La sala llena TODA la pantalla — los 2 tiles de vacío + 1 de pared
+        // quedan dentro de la sala misma (no hay margen externo)
+        int colsSala  = (int)(ancho / Room.TILE_SIZE);  // 1280/32 = 40
+        int filasSala = (int)(alto  / Room.TILE_SIZE);  // 720/32  = 22
 
-        dungeon     = new Dungeon();
+        // 1) Offset = 0 para que la sala empiece en la esquina (0,0)
+        Room.inicializarOffset(ancho, alto, colsSala, filasSala);
+
+        dungeon     = new Dungeon(colsSala, filasSala);
         proyectiles = new ArrayList<>();
 
-        // 2) Spawnear jugador en el centro de la sala, no de la pantalla
+        // 2) Spawnear jugador en el centro de la sala
         Room salaInicial = dungeon.getSalaActual();
         double spawnX = salaInicial.getCentroX() - 48;
         double spawnY = salaInicial.getCentroY() - 48;

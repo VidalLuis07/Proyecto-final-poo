@@ -26,7 +26,6 @@ public class Room {
     public static final int TILE_SIZE = 32;
 
     // ── Offset: desplazamiento para centrar la sala en la pantalla ─────────
-    // Se calcula en inicializarOffset() una sola vez al arrancar el juego
     private static double offsetX = 0;
     private static double offsetY = 0;
 
@@ -45,11 +44,8 @@ public class Room {
     }
 
     // ══════════════════════════════════════════════════════════════════════
-    //  NUEVO: Llama esto UNA SOLA VEZ desde GameLoop antes de iniciarJuego()
+    //  Llama esto UNA SOLA VEZ desde GameLoop antes de iniciarJuego()
     //  para que la sala quede centrada en la pantalla.
-    //
-    //  Ejemplo en GameLoop:
-    //      Room.inicializarOffset(ancho, alto, 15, 10);
     // ══════════════════════════════════════════════════════════════════════
     public static void inicializarOffset(double anchoCanvas, double altoCanvas,
                                          int columnasRoom, int filasRoom) {
@@ -63,18 +59,40 @@ public class Room {
     public static double getOffsetY() { return offsetY; }
 
     // ══════════════════════════════════════════════════════════════════════
-    //  Genera tiles con el offset aplicado para que queden centrados
+    //  Genera tiles con la estructura:
+    //    - 2 filas/columnas de borde → VACIO  (negro, no transitable)
+    //    - 1 fila/columna de pared   → PARED  (sprite pared, no transitable)
+    //    - Todo lo demás             → PISO   (sprite piso, transitable)
     // ══════════════════════════════════════════════════════════════════════
     private void generarTiles(int columnas, int filas) {
         for (int col = 0; col < columnas; col++) {
             for (int fila = 0; fila < filas; fila++) {
-                boolean esBorde = (col == 0 || col == columnas - 1
-                        || fila == 0 || fila == filas - 1);
-
                 double pixelX = offsetX + col * TILE_SIZE;
                 double pixelY = offsetY + fila * TILE_SIZE;
 
-                mapaTiles[col][fila] = new Tile(pixelX, pixelY, !esBorde);
+                Tile.TipoTile tipo;
+                boolean transitable;
+
+                // Borde exterior de 2 tiles → VACIO
+                boolean esBordeVacio = (col < 2 || col >= columnas - 2
+                        || fila < 2 || fila >= filas - 2);
+
+                // Una capa de pared justo dentro del borde vacío
+                boolean esPared = (col == 2 || col == columnas - 3
+                        || fila == 2 || fila == filas - 3);
+
+                if (esBordeVacio) {
+                    tipo = Tile.TipoTile.VACIO;
+                    transitable = false;
+                } else if (esPared) {
+                    tipo = Tile.TipoTile.PARED;
+                    transitable = false;
+                } else {
+                    tipo = Tile.TipoTile.PISO;
+                    transitable = true;
+                }
+
+                mapaTiles[col][fila] = new Tile(pixelX, pixelY, transitable, tipo);
             }
         }
     }
