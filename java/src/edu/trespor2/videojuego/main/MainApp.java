@@ -23,7 +23,7 @@ public class MainApp extends Application {
 
         //Arrancamos el GameLoop
         GameLoop gameLoop = new GameLoop(canvas, scene);
-        gameLoop.start(); // Esto activa el AnimationTimer
+        gameLoop.start();
 
         //Configuramos la ventana
         stage.setTitle("Dungeon Crawler — POO 2025");
@@ -33,6 +33,6 @@ public class MainApp extends Application {
     }
 
     public static void main(String[] args) {
-        launch(args); // Punto de entrada real de JavaFX
+        launch(args);
     }
 }
