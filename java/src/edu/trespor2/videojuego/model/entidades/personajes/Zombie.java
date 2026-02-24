@@ -6,8 +6,7 @@ public class Zombie extends Enemigo {
 
     public Zombie(double x, double y, double width, double height, double velocidad, int vidaMaxima) {
         super(x, y, width, height, velocidad, vidaMaxima);
-
-        this.ataque = 10; //daño de ejemplo
+        this.ataque = 1; // daño de ejemplo
     }
 
     @Override

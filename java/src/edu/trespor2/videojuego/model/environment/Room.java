@@ -1,11 +1,13 @@
 package edu.trespor2.videojuego.model.environment;
 
 import edu.trespor2.videojuego.model.entidades.personajes.Enemigo;
+import edu.trespor2.videojuego.model.entidades.personajes.Zombie;
 import edu.trespor2.videojuego.model.items.Chest;
 import edu.trespor2.videojuego.model.items.Coins;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 public class Room {
 
@@ -22,10 +24,10 @@ public class Room {
     private int columnas;
     private int filas;
 
-    // ── Tamaño de cada tile en píxeles ─────────────────────────────────────
+    // tamaño de cada tile en píxeles
     public static final int TILE_SIZE = 32;
 
-    // ── Offset: desplazamiento para centrar la sala en la pantalla ─────────
+    // desplazamiento para centrar la sala en la pantalla
     private static double offsetX = 0;
     private static double offsetY = 0;
 
@@ -38,15 +40,17 @@ public class Room {
         this.cofres     = new ArrayList<>();
         this.monedasEnSuelo = new ArrayList<>();
         this.estaLimpia = false;
+
+        // tipo de salas (tamaño) por defecto esta en normal
         this.tipo       = TipoSala.NORMAL;
 
         generarTiles(columnas, filas);
+
+        // generación de enemigos justo después de crear el mapa
+        generarEnemigos();
     }
 
-    // ══════════════════════════════════════════════════════════════════════
-    //  Llama esto UNA SOLA VEZ desde GameLoop antes de iniciarJuego()
-    //  para que la sala quede centrada en la pantalla.
-    // ══════════════════════════════════════════════════════════════════════
+    // centra la pantalla al iniciar
     public static void inicializarOffset(double anchoCanvas, double altoCanvas,
                                          int columnasRoom, int filasRoom) {
         double salaAnchoPx = columnasRoom * TILE_SIZE;
@@ -58,48 +62,106 @@ public class Room {
     public static double getOffsetX() { return offsetX; }
     public static double getOffsetY() { return offsetY; }
 
-    // ══════════════════════════════════════════════════════════════════════
-    //  Genera tiles con la estructura:
-    //    - 2 filas/columnas de borde → VACIO  (negro, no transitable)
-    //    - 1 fila/columna de pared   → PARED  (sprite pared, no transitable)
-    //    - Todo lo demás             → PISO   (sprite piso, transitable)
-    // ══════════════════════════════════════════════════════════════════════
+
     private void generarTiles(int columnas, int filas) {
         for (int col = 0; col < columnas; col++) {
             for (int fila = 0; fila < filas; fila++) {
                 double pixelX = offsetX + col * TILE_SIZE;
                 double pixelY = offsetY + fila * TILE_SIZE;
 
-                Tile.TipoTile tipo;
+                Tile.TipoTile tipoTileActual;
                 boolean transitable;
 
-                // Borde exterior de 2 tiles → VACIO
                 boolean esBordeVacio = (col < 2 || col >= columnas - 2
                         || fila < 2 || fila >= filas - 2);
 
-                // Una capa de pared justo dentro del borde vacío
                 boolean esPared = (col == 2 || col == columnas - 3
                         || fila == 2 || fila == filas - 3);
 
                 if (esBordeVacio) {
-                    tipo = Tile.TipoTile.VACIO;
+                    tipoTileActual = Tile.TipoTile.VACIO;
                     transitable = false;
                 } else if (esPared) {
-                    tipo = Tile.TipoTile.PARED;
+                    tipoTileActual = Tile.TipoTile.PARED;
                     transitable = false;
                 } else {
-                    tipo = Tile.TipoTile.PISO;
+                    tipoTileActual = Tile.TipoTile.PISO;
                     transitable = true;
                 }
 
-                mapaTiles[col][fila] = new Tile(pixelX, pixelY, transitable, tipo);
+                mapaTiles[col][fila] = new Tile(pixelX, pixelY, transitable, tipoTileActual);
             }
         }
     }
 
-    // ══════════════════════════════════════════════════════════════════════
-    //  Devuelve el centro de la sala en píxeles (para spawnear al jugador)
-    // ══════════════════════════════════════════════════════════════════════
+    private void generarEnemigos() {
+        if (this.tipo == TipoSala.INICIO || this.tipo == TipoSala.TIENDA) {
+            this.estaLimpia = true;
+            return;
+        }
+
+        Random random = new Random();
+        int cantidadZombies = 3 + random.nextInt(3);
+
+        int minCol = 3;
+        int maxCol = columnas - 4;
+        int minFila = 3;
+        int maxFila = filas - 4;
+
+        if (maxCol < minCol || maxFila < minFila) return;
+
+        // distancia de generacion entre enemigos
+        double distanciaMinimaEntreEnemigos = 100.0;
+        // distancia de enemigos entre el jugador
+        double distanciaMinimaAlCentro = 150.0;
+
+        double centroX = getCentroX();
+        double centroY = getCentroY();
+
+        for (int i = 0; i < cantidadZombies; i++) {
+            double pixelX = 0;
+            double pixelY = 0;
+            boolean posicionValida = false;
+            int intentos = 0;
+
+            // buscar una posicion donde hacer spawn
+            while (!posicionValida && intentos < 20) {
+                int randomCol = minCol + random.nextInt((maxCol - minCol) + 1);
+                int randomFila = minFila + random.nextInt((maxFila - minFila) + 1);
+
+                pixelX = offsetX + (randomCol * TILE_SIZE);
+                pixelY = offsetY + (randomFila * TILE_SIZE);
+
+                // revisar si esta muy cerca del jugador, calcular el ideal para calcular distancias en 2D
+                double distAlCentro = Math.hypot(pixelX - centroX, pixelY - centroY);
+                if (distAlCentro < distanciaMinimaAlCentro) {
+                    intentos++;
+                    continue;
+                }
+
+                // logica para saber si esta muy cerca entre enemigos
+                boolean muyCercaDeOtro = false;
+                for (Enemigo e : this.enemigos) {
+                    double distAEnemigo = Math.hypot(pixelX - e.getX(), pixelY - e.getY());
+                    if (distAEnemigo < distanciaMinimaEntreEnemigos) {
+                        muyCercaDeOtro = true;
+                        break; // Encontramos uno cerca, dejamos de revisar
+                    }
+                }
+
+                if (muyCercaDeOtro) {
+                    intentos++;
+                } else {
+                    posicionValida = true;
+                }
+            }
+
+            // crear zombie
+            Zombie nuevoZombie = new Zombie(pixelX, pixelY, 32, 32, 0.6, 5);
+            this.addEnemigo(nuevoZombie);
+        }
+    }
+
     public double getCentroX() {
         return offsetX + (columnas / 2.0) * TILE_SIZE;
     }
@@ -107,10 +169,6 @@ public class Room {
     public double getCentroY() {
         return offsetY + (filas / 2.0) * TILE_SIZE;
     }
-
-    // ══════════════════════════════════════════════════════════════════════
-    //  MÉTODOS EXISTENTES (sin cambios)
-    // ══════════════════════════════════════════════════════════════════════
 
     public TipoSala getTipo() { return tipo; }
     public void setTipo(TipoSala tipo) { this.tipo = tipo; }

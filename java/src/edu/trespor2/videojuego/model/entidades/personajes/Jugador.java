@@ -4,6 +4,8 @@ import edu.trespor2.videojuego.model.entidades.Proyectiles;
 
 public class Jugador extends GameCharacter {
 
+    private long ultimoTiempoDano = 0;
+    private final long TIEMPO_INVULNERABILIDAD_MS = 1000;
     private String nombreSprite; // "carlos" o "carla" — para saber qué imagen usar
 
     // Agrega nombreSprite al final del constructor
