@@ -1,6 +1,4 @@
 package edu.trespor2.videojuego.model.entidades.personajes;
-
-
 import edu.trespor2.videojuego.model.IDamageable;
 import edu.trespor2.videojuego.model.entidades.EntidadMovible;
 

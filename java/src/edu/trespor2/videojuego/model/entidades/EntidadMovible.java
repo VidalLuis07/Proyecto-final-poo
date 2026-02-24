@@ -26,7 +26,7 @@ public abstract class EntidadMovible extends Entidad implements IUpdatable {
 
 
     @Override
-    public void update() {
+    public void update(double delta) {
         mover();
     }
 

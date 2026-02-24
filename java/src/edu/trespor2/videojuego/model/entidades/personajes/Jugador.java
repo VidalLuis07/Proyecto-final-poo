@@ -4,19 +4,22 @@ import edu.trespor2.videojuego.model.entidades.Proyectiles;
 
 public class Jugador extends GameCharacter {
 
-    public Jugador(double x, double y, double width, double height, double velocidad, int vidaMaxima) {
+    private String nombreSprite; // "carlos" o "carla" — para saber qué imagen usar
+
+    // Agrega nombreSprite al final del constructor
+    public Jugador(double x, double y, double width, double height,
+                   double velocidad, int vidaMaxima, String nombreSprite) {
         super(x, y, width, height, velocidad, vidaMaxima);
+        this.nombreSprite = nombreSprite;
+    }
+
+    public String getNombreSprite() {
+        return nombreSprite;
     }
 
     public Proyectiles disparar(double direccionX, double direccionY) {
         double balaX = this.x + (this.width / 2);
         double balaY = this.y + (this.height / 2);
-
-        double anchoBala = 10; //ancho de ejemplo
-        double altoBala = 10; //alto de ejemplo
-        double velocidadBala = 7.0; //velocidad de ejemplo
-        int danoBala = 1; // Hace 1 de daño
-
-        return new Proyectiles(balaX, balaY, anchoBala, altoBala, velocidadBala, direccionX, direccionY, danoBala);
+        return new Proyectiles(balaX, balaY, 10, 10, 7.0, direccionX, direccionY, 1);
     }
 }

@@ -1,6 +1,6 @@
 package edu.trespor2.videojuego.model;
 
 public interface IUpdatable {
-    void update();
+    void update(double delta);
 
 }
