@@ -32,7 +32,7 @@ public class Zombie extends Enemigo {
             this.setDy(0); // No se mueve
         }
     }
-
+//usar for por cada enemigo que haya
     public void atacar(Jugador jugador) {
         if (this.getBounds().intersects(jugador.getBounds())) {
             jugador.recibirDano(this.ataque);

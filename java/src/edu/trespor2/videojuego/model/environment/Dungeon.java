@@ -3,6 +3,7 @@ package edu.trespor2.videojuego.model.environment;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import edu.trespor2.videojuego.model.entidades.personajes.Zombie;
 
 public class Dungeon {
 
@@ -90,9 +91,39 @@ public class Dungeon {
             }
         }
 
+        /*Spawnear zombies en todas las salas excepto MENU y TIENDA
+        * Nuevo
+         */
+        for (Room sala : todasLasSalas) {
+            if (sala.getTipo() != Room.TipoSala.INICIO && sala.getTipo() != Room.TipoSala.TIENDA) {
+                spawnearEnemigos(sala, rand);
+            }
+        }
+
         System.out.println("¡Mazmorra generada con " + totalSalasObjetivo + " salas! (sala: " + colsSala + "x" + filasSala + ")");
     }
 
+
+    // Spawnea zombies en posiciones aleatorias dentro del area transitable de la sala
+    private void spawnearEnemigos(Room sala, Random rand) {
+        int cantidad = sala.getTipo() == Room.TipoSala.JEFE ? 1 : rand.nextInt(3) + 2; // 2-4 zombies, 1 boss
+
+        // Area transitable: empieza en tile 3 (después de 2 vacío + 1 pared)
+        int tileInicio = 3;
+        int tileFinCol  = colsSala  - 4; // deja margen al otro lado
+        int tileFinFila = filasSala - 4;
+
+        for (int i = 0; i < cantidad; i++) {
+            int col  = tileInicio + rand.nextInt(Math.max(1, tileFinCol  - tileInicio));
+            int fila = tileInicio + rand.nextInt(Math.max(1, tileFinFila - tileInicio));
+
+            double spawnX = Room.getOffsetX() + col  * Room.TILE_SIZE;
+            double spawnY = Room.getOffsetY() + fila * Room.TILE_SIZE;
+
+            Zombie z = new Zombie(spawnX, spawnY, 48, 48, 1.5, 30);
+            sala.addEnemigo(z);
+        }
+    }
 
     private class Coordenada {
         int x, y;

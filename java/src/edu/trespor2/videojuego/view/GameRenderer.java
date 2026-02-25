@@ -69,9 +69,8 @@ public class GameRenderer {
 
     // ══════════════════════════════════════════════════════════════════════
     //  TILES
-    //  - VACIO  → tile_vacio  (borde exterior de 2 tiles)
-    //  - PARED  → tile_pared  (una capa de pared)
-    //  - PISO   → tile_piso   (todo el interior)
+    //  CAPA 1 → tile_vacio cubre TODA la pantalla (el "espacio" exterior)
+    //  CAPA 2 → encima se dibuja la sala: pared en bordes, piso en interior
     // ══════════════════════════════════════════════════════════════════════
     private void dibujarTiles(GraphicsContext gc, Tile[][] tiles,
                               double anchoCanvas, double altoCanvas) {
@@ -80,7 +79,7 @@ public class GameRenderer {
         Image imgPiso  = sprites.getImagen("tile_piso");
         Image imgPared = sprites.getImagen("tile_pared");
 
-        // ── CAPA 1: tile_vacio cubre toda la pantalla (fondo) ──────────
+        // ── CAPA 1: tile_vacio cubre toda la pantalla ──────────────────
         int colsCanvas  = (int) Math.ceil(anchoCanvas / TILE_SIZE);
         int filasCanvas = (int) Math.ceil(altoCanvas  / TILE_SIZE);
 
@@ -92,13 +91,14 @@ public class GameRenderer {
                 if (imgVacio != null) {
                     gc.drawImage(imgVacio, px, py, TILE_SIZE, TILE_SIZE);
                 } else {
+                    // Fallback: negro si no cargó la imagen
                     gc.setFill(Color.BLACK);
                     gc.fillRect(px, py, TILE_SIZE, TILE_SIZE);
                 }
             }
         }
 
-        // ── CAPA 2: sala encima del fondo ──────────────────────────────
+        // ── CAPA 2: sala (pared + piso) encima del vacío ───────────────
         if (tiles == null) return;
 
         for (int col = 0; col < tiles.length; col++) {
@@ -106,21 +106,13 @@ public class GameRenderer {
                 Tile tile = tiles[col][fila];
                 if (tile == null) continue;
 
-                // Los tiles VACIO de la sala no se dibujan: se mezclan con el fondo
-                if (tile.getTipo() == Tile.TipoTile.VACIO) continue;
-
-                Image img;
-                switch (tile.getTipo()) {
-                    case PARED -> img = imgPared;
-                    case PISO  -> img = imgPiso;
-                    default    -> img = imgVacio;
-                }
+                Image img = tile.isTransitable() ? imgPiso : imgPared;
 
                 if (img != null) {
                     gc.drawImage(img, tile.getX(), tile.getY(), TILE_SIZE, TILE_SIZE);
                 } else {
                     // Fallback con colores si no cargaron las imágenes
-                    gc.setFill(tile.getTipo() == Tile.TipoTile.PISO
+                    gc.setFill(tile.isTransitable()
                             ? Color.web("#4a3728")   // marrón oscuro = piso
                             : Color.web("#1a1a2e")); // azul muy oscuro = pared
                     gc.fillRect(tile.getX(), tile.getY(), TILE_SIZE, TILE_SIZE);
@@ -137,17 +129,32 @@ public class GameRenderer {
     // ══════════════════════════════════════════════════════════════════════
 
     private void dibujarJugador(GraphicsContext gc, Jugador jugador) {
-        Direccion dir = SpriteManager.calcularDireccion(jugador.getDx(), jugador.getDy());
-
-        if (jugador.getDx() == 0 && jugador.getDy() == 0) {
-            dir = Direccion.FRENTE;
-            frameActualJugador = 0;
+        // Calcular dirección — si está quieto usar la última conocida
+        Direccion dir;
+        if (jugador.getDx() != 0 || jugador.getDy() != 0) {
+            dir = SpriteManager.calcularDireccion(jugador.getDx(), jugador.getDy());
+        } else {
+            dir = SpriteManager.calcularDireccion(jugador.getUltimaDirX(), jugador.getUltimaDirY());
+            if (!jugador.isAtacando()) frameActualJugador = 0;
         }
 
-        Image frame = sprites.getFrame(jugador.getNombreSprite(), dir, frameActualJugador);
+        Image frameToDraw;
 
-        if (frame != null) {
-            gc.drawImage(frame, jugador.getX(), jugador.getY(),
+        if (jugador.isAtacando()) {
+            // Cuando ataca: usar SOLO el sprite de ataque, nada del sprite normal
+            String spriteAtaque = jugador.getNombreSprite() + "_ataque";
+            frameToDraw = sprites.getFrame(spriteAtaque, dir, jugador.getFrameAtaque());
+            // Si por alguna razón no cargó, fallback al normal
+            if (frameToDraw == null) {
+                frameToDraw = sprites.getFrame(jugador.getNombreSprite(), dir, 0);
+            }
+        } else {
+            // Cuando camina/está quieto: sprite normal
+            frameToDraw = sprites.getFrame(jugador.getNombreSprite(), dir, frameActualJugador);
+        }
+
+        if (frameToDraw != null) {
+            gc.drawImage(frameToDraw, jugador.getX(), jugador.getY(),
                     jugador.getWidth(), jugador.getHeight());
         } else {
             gc.setFill(Color.CORNFLOWERBLUE);
@@ -180,9 +187,28 @@ public class GameRenderer {
     }
 
     private void dibujarProyectiles(GraphicsContext gc, List<Proyectiles> proyectiles) {
-        gc.setFill(Color.YELLOW);
+        Image imgDaga = sprites.getImagen("daga");
+
         for (Proyectiles p : proyectiles) {
-            gc.fillOval(p.getX(), p.getY(), p.getWidth(), p.getHeight());
+            if (p.isDaga() && imgDaga != null) {
+                // Rotar la daga según su dirección de vuelo
+                double angulo = Math.toDegrees(Math.atan2(p.getDy(), p.getDx()));
+                double cx = p.getX() + p.getWidth()  / 2;
+                double cy = p.getY() + p.getHeight() / 2;
+
+                gc.save();
+                gc.translate(cx, cy);
+                // La daga apunta hacia arriba en el sprite → restar 90° para alinear con dirección
+                gc.rotate(angulo - 90);
+                gc.drawImage(imgDaga,
+                        -p.getWidth() / 2, -p.getHeight() / 2,
+                        p.getWidth(), p.getHeight());
+                gc.restore();
+            } else {
+                // Proyectil normal (bala del boss, etc.)
+                gc.setFill(Color.YELLOW);
+                gc.fillOval(p.getX(), p.getY(), p.getWidth(), p.getHeight());
+            }
         }
     }
 

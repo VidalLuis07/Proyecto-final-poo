@@ -61,11 +61,22 @@ public class SpriteManager {
                 "/assets/images/karlaDerecha.png",
                 32, 32, 4);
 
+        // ── Animaciones de ataque con daga ─────────────────────────────────
+        // Frente y atrás: cada frame mide 32x40 (3 frames = 96px de ancho)
+        // Izquierda y derecha: cada frame mide 40x32 (3 frames = 120px de ancho)
+        cargarFilaDespritesheet("carlos_ataque", Direccion.FRENTE,    "/assets/images/carlosDagaFrente.png",    32, 32, 3);
+        cargarFilaDespritesheet("carlos_ataque", Direccion.ATRAS,     "/assets/images/carloDagaDetras.png",     32, 32, 3);
+        cargarFilaDespritesheet("carlos_ataque", Direccion.IZQUIERDA, "/assets/images/carlosDagaIzquierda.png", 32, 32, 3);
+        cargarFilaDespritesheet("carlos_ataque", Direccion.DERECHA,   "/assets/images/carlosDagaDerecha.png",   32, 32, 3);
+
+        // ── Sprite de la daga (proyectil) ──────────────────────────────────
+        cargarImagen("daga", "/assets/images/daga.png");
+
         // ── Enemigos (spritesheet único con 4 filas) ───────────────────────
-        cargarSpritesheet("zombie", "/assets/images/zombie.png", 32, 32, 4);
+        cargarSpritesheet("zombie", "/assets/images/chatFrente.png", 40, 40, 4);
         cargarSpritesheet("boss",   "/assets/images/boss.png",   64, 64, 6);
 
-       //MENU
+        //MENU
         cargarImagen("menu_fondo",   "/assets/images/1.png");
         cargarImagen("boton_start",  "/assets/images/2.png");
         cargarImagen("boton_exit",   "/assets/images/3.png");
