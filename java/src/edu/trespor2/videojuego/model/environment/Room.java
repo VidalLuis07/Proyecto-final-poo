@@ -24,10 +24,8 @@ public class Room {
     private int columnas;
     private int filas;
 
-    // tamaño de cada tile en píxeles
     public static final int TILE_SIZE = 32;
 
-    // desplazamiento para centrar la sala en la pantalla
     private static double offsetX = 0;
     private static double offsetY = 0;
 
@@ -40,17 +38,12 @@ public class Room {
         this.cofres     = new ArrayList<>();
         this.monedasEnSuelo = new ArrayList<>();
         this.estaLimpia = false;
-
-        // tipo de salas (tamaño) por defecto esta en normal
         this.tipo       = TipoSala.NORMAL;
 
         generarTiles(columnas, filas);
-
-        // generación de enemigos justo después de crear el mapa
         generarEnemigos();
     }
 
-    // centra la pantalla al iniciar
     public static void inicializarOffset(double anchoCanvas, double altoCanvas,
                                          int columnasRoom, int filasRoom) {
         double salaAnchoPx = columnasRoom * TILE_SIZE;
@@ -61,7 +54,6 @@ public class Room {
 
     public static double getOffsetX() { return offsetX; }
     public static double getOffsetY() { return offsetY; }
-
 
     private void generarTiles(int columnas, int filas) {
         for (int col = 0; col < columnas; col++) {
@@ -97,6 +89,7 @@ public class Room {
     private void generarEnemigos() {
         if (this.tipo == TipoSala.INICIO || this.tipo == TipoSala.TIENDA) {
             this.estaLimpia = true;
+            this.enemigos.clear();
             return;
         }
 
@@ -110,11 +103,9 @@ public class Room {
 
         if (maxCol < minCol || maxFila < minFila) return;
 
-        // distancia de generacion entre enemigos
-        double distanciaMinimaEntreEnemigos = 100.0;
-        // distancia de enemigos entre el jugador
-        double distanciaMinimaAlCentro = 150.0;
-
+        // Lógica de espaciado (del segundo código)
+        double distMinimaEntreEnemigos = 100.0;
+        double distMinimaAlCentro = 150.0;
         double centroX = getCentroX();
         double centroY = getCentroY();
 
@@ -124,7 +115,6 @@ public class Room {
             boolean posicionValida = false;
             int intentos = 0;
 
-            // buscar una posicion donde hacer spawn
             while (!posicionValida && intentos < 20) {
                 int randomCol = minCol + random.nextInt((maxCol - minCol) + 1);
                 int randomFila = minFila + random.nextInt((maxFila - minFila) + 1);
@@ -132,33 +122,45 @@ public class Room {
                 pixelX = offsetX + (randomCol * TILE_SIZE);
                 pixelY = offsetY + (randomFila * TILE_SIZE);
 
-                // revisar si esta muy cerca del jugador, calcular el ideal para calcular distancias en 2D
                 double distAlCentro = Math.hypot(pixelX - centroX, pixelY - centroY);
-                if (distAlCentro < distanciaMinimaAlCentro) {
+                if (distAlCentro < distMinimaAlCentro) {
                     intentos++;
                     continue;
                 }
 
-                // logica para saber si esta muy cerca entre enemigos
                 boolean muyCercaDeOtro = false;
                 for (Enemigo e : this.enemigos) {
                     double distAEnemigo = Math.hypot(pixelX - e.getX(), pixelY - e.getY());
-                    if (distAEnemigo < distanciaMinimaEntreEnemigos) {
+                    if (distAEnemigo < distMinimaEntreEnemigos) {
                         muyCercaDeOtro = true;
-                        break; // Encontramos uno cerca, dejamos de revisar
+                        break;
                     }
                 }
 
-                if (muyCercaDeOtro) {
-                    intentos++;
-                } else {
-                    posicionValida = true;
-                }
+                if (muyCercaDeOtro) intentos++;
+                else posicionValida = true;
             }
 
-            // crear zombie
-            Zombie nuevoZombie = new Zombie(pixelX, pixelY, 32, 32, 0.6, 5);
-            this.addEnemigo(nuevoZombie);
+            // NUEVA LÓGICA DE TAMAÑOS Y STATS
+            if (posicionValida) {
+                double tamaño;
+                int vida;
+                double velocidad;
+
+                // 20% de probabilidad de ser un zombie grande
+                if (random.nextDouble() < 0.20) {
+                    tamaño = 64;     // Más grande
+                    vida = 50;       // Más vida
+                    velocidad = 0.4; // Más lento
+                } else {
+                    tamaño = 32;     // Tamaño normal
+                    vida = 30;        // Vida normal
+                    velocidad = 0.6; // Velocidad normal
+                }
+
+                Zombie nuevoZombie = new Zombie(pixelX, pixelY, tamaño, tamaño, velocidad, vida);
+                this.addEnemigo(nuevoZombie);
+            }
         }
     }
 
@@ -171,7 +173,14 @@ public class Room {
     }
 
     public TipoSala getTipo() { return tipo; }
-    public void setTipo(TipoSala tipo) { this.tipo = tipo; }
+
+    public void setTipo(TipoSala tipo) {
+        this.tipo = tipo;
+        if(tipo == TipoSala.INICIO || tipo == TipoSala.TIENDA){
+            estaLimpia = true;
+            this.enemigos.clear(); // Limpieza preventiva para salas seguras
+        }
+    }
 
     public void addPuerta(Door puerta)   { puertas.add(puerta); }
     public void addEnemigo(Enemigo e)    { enemigos.add(e); }
@@ -181,18 +190,34 @@ public class Room {
     public void setTile(int x, int y, Tile tile) { mapaTiles[x][y] = tile; }
 
     public void actualizarEstadoSala() {
+        // Si es sala segura, las puertas siempre se abren
+        if (tipo == TipoSala.INICIO || tipo == TipoSala.TIENDA) {
+            estaLimpia = true;
+            for (Door d : puertas) d.abrir();
+            return;
+        }
+
         if (estaLimpia) return;
+
         boolean quedanVivos = false;
         for (Enemigo e : enemigos) {
-            if (!e.estaMuerto()) { quedanVivos = true; break; }
+            if (!e.estaMuerto()) {
+                quedanVivos = true;
+                break;
+            }
         }
+
         if (!quedanVivos) {
             estaLimpia = true;
             for (Door puerta : puertas) puerta.abrir();
 
-            // generar cofre
+            // Generar cofre de premio (del segundo código)
             Chest cofrePremio = new Chest(getCentroX() - 16, getCentroY() - 16);
             addCofre(cofrePremio);
+            System.out.println("¡Sala limpia! Aparece un cofre.");
+        } else {
+            // Mientras haya enemigos, las puertas se mantienen cerradas
+            for (Door puerta : puertas) puerta.cerrar();
         }
     }
 
