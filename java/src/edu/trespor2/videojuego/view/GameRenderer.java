@@ -16,7 +16,7 @@ import java.util.List;
 
 public class GameRenderer {
 
-    // ── Atributos ──────────────────────────────────────────────────────────
+    // Atributos
     private final SpriteManager sprites;
 
     private static final int VELOCIDAD_ANIMACION = 8;
@@ -28,14 +28,13 @@ public class GameRenderer {
     private int frameActualJugador = 0;
     private int frameActualEnemigo = 0;
 
-    // ── Constructor ────────────────────────────────────────────────────────
+    // constructor
     public GameRenderer() {
         this.sprites = SpriteManager.getInstance();
     }
 
-    // ══════════════════════════════════════════════════════════════════════
-    //  MÉTODO PRINCIPAL
-    // ══════════════════════════════════════════════════════════════════════
+    //  METODO PRINCIPAL
+
     public void render(GraphicsContext gc,
                        Jugador jugador,
                        Room salaActual,
@@ -58,7 +57,7 @@ public class GameRenderer {
             frameActualEnemigo = (frameActualEnemigo + 1) % FRAMES_ENEMIGO;
         }
 
-        // ── Capas en orden ──────────────────────────────────────────────
+        // ── Capas en orden
         dibujarTiles(gc, salaActual.getMapaTiles(), anchoCanvas, altoCanvas); // ← primero
         dibujarMonedas(gc, salaActual.getMonedasEnSuelo());
         dibujarCofres(gc, salaActual.getCofres());
@@ -67,11 +66,10 @@ public class GameRenderer {
         dibujarJugador(gc, jugador);
     }
 
-    // ══════════════════════════════════════════════════════════════════════
+
     //  TILES
     //  CAPA 1 → tile_vacio cubre TODA la pantalla (el "espacio" exterior)
     //  CAPA 2 → encima se dibuja la sala: pared en bordes, piso en interior
-    // ══════════════════════════════════════════════════════════════════════
     private void dibujarTiles(GraphicsContext gc, Tile[][] tiles,
                               double anchoCanvas, double altoCanvas) {
 
@@ -79,7 +77,7 @@ public class GameRenderer {
         Image imgPiso  = sprites.getImagen("tile_piso");
         Image imgPared = sprites.getImagen("tile_pared");
 
-        // ── CAPA 1: tile_vacio cubre toda la pantalla ──────────────────
+        // CAPA 1: tile_vacio cubre toda la pantalla
         int colsCanvas  = (int) Math.ceil(anchoCanvas / TILE_SIZE);
         int filasCanvas = (int) Math.ceil(altoCanvas  / TILE_SIZE);
 
@@ -98,7 +96,7 @@ public class GameRenderer {
             }
         }
 
-        // ── CAPA 2: sala (pared + piso) encima del vacío ───────────────
+        // CAPA 2: sala (pared + piso) encima del vacío
         if (tiles == null) return;
 
         for (int col = 0; col < tiles.length; col++) {
@@ -124,9 +122,7 @@ public class GameRenderer {
         }
     }
 
-    // ══════════════════════════════════════════════════════════════════════
     //  CAPAS EXISTENTES (sin cambios)
-    // ══════════════════════════════════════════════════════════════════════
 
     private void dibujarJugador(GraphicsContext gc, Jugador jugador) {
         // Calcular dirección — si está quieto usar la última conocida
@@ -213,12 +209,22 @@ public class GameRenderer {
     }
 
     private void dibujarCofres(GraphicsContext gc, List<Chest> cofres) {
+        Image imgCerrado = sprites.getImagen("cofre_cerrado");
+        Image imgAbierto = sprites.getImagen("cofre_abierto");
+
         for (Chest cofre : cofres) {
-            gc.setFill(cofre.isAbierto() ? Color.SADDLEBROWN : Color.GOLDENROD);
-            gc.fillRect(cofre.getX(), cofre.getY(), cofre.getWidth(), cofre.getHeight());
+            Image imgAUsar = cofre.isAbierto() ? imgAbierto : imgCerrado;
+
+            if (imgAUsar != null) {
+                // sprites para el cofre
+                gc.drawImage(imgAUsar, cofre.getX(), cofre.getY(), cofre.getWidth(), cofre.getHeight());
+            } else {
+                // fallback de colores por si hay error con el archivo
+                gc.setFill(cofre.isAbierto() ? Color.SADDLEBROWN : Color.GOLDENROD);
+                gc.fillRect(cofre.getX(), cofre.getY(), cofre.getWidth(), cofre.getHeight());
+            }
         }
     }
-
     private void dibujarMonedas(GraphicsContext gc, List<Coins> monedas) {
         gc.setFill(Color.GOLD);
         for (Coins moneda : monedas) {
@@ -226,9 +232,7 @@ public class GameRenderer {
         }
     }
 
-    // ══════════════════════════════════════════════════════════════════════
     //  UTILIDADES
-    // ══════════════════════════════════════════════════════════════════════
     private void dibujarBarraVida(GraphicsContext gc, double x, double y,
                                   double ancho, int vidaActual, int vidaMaxima) {
         double proporcion = (double) vidaActual / vidaMaxima;

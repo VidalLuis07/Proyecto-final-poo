@@ -189,6 +189,10 @@ public class Room {
         if (!quedanVivos) {
             estaLimpia = true;
             for (Door puerta : puertas) puerta.abrir();
+
+            // generar cofre
+            Chest cofrePremio = new Chest(getCentroX() - 16, getCentroY() - 16);
+            addCofre(cofrePremio);
         }
     }
 

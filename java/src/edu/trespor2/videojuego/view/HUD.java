@@ -31,9 +31,7 @@ public class HUD {
         dibujarMiniMapa(gc, dungeon, anchoCanvas, altoCanvas);
     }
 
-    // ══════════════════════════════════════════════════════════════════════
     //  VIDA — Corazones en la esquina superior izquierda
-    // ══════════════════════════════════════════════════════════════════════
     private void dibujarVida(GraphicsContext gc, Jugador jugador) {
         int vidaActual = jugador.getVidaActual();
         int vidaMaxima = jugador.getVidaMaxima();
@@ -61,24 +59,19 @@ public class HUD {
         }
     }
 
-    // ══════════════════════════════════════════════════════════════════════
     //  MONEDAS — Esquina superior derecha (cuando Jugador tenga getDinero())
-    // ══════════════════════════════════════════════════════════════════════
+
     private void dibujarMonedas(GraphicsContext gc, Jugador jugador) {
-        // TODO: cuando tu compañero implemente getDinero() en Jugador, descomentar:
-        // int monedas = jugador.getDinero();
+        int monedas = jugador.getDinero();
 
-        gc.setFont(Font.font("Arial", FontWeight.BOLD, 16));
+        gc.setFont(Font.font("Arial", FontWeight.BOLD, 20));
         gc.setFill(Color.GOLD);
-        // gc.fillText("💰 " + monedas, anchoCanvas - 80, MARGEN + 16);
-
-        // Por ahora mostramos texto placeholder
-        gc.fillText("$ --", 20, 70);
+        gc.fillText("💰 " + monedas, 20, 80);
     }
 
-    // ══════════════════════════════════════════════════════════════════════
+
     //  MINIMAPA — Esquina superior derecha
-    // ══════════════════════════════════════════════════════════════════════
+
     private void dibujarMiniMapa(GraphicsContext gc, Dungeon dungeon,
                                  double anchoCanvas, double altoCanvas) {
         if (dungeon == null) return;

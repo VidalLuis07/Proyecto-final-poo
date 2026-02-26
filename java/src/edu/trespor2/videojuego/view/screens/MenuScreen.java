@@ -99,9 +99,8 @@ public class MenuScreen {
         }
     }
 
-    // ══════════════════════════════════════════════════════════════════════
+
     //  DETECCIÓN DE CLICS — El GameLoop llama estos métodos
-    // ══════════════════════════════════════════════════════════════════════
     public boolean isJugarPresionado(double mx, double my) {
         return isHover(mx, my, BTN_START_X, BTN_START_Y, BTN_START_W, BTN_START_H);
     }
