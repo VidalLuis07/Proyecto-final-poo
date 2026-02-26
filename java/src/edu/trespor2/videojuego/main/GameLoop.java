@@ -6,6 +6,7 @@ import edu.trespor2.videojuego.model.entidades.Proyectiles;
 import edu.trespor2.videojuego.model.entidades.personajes.Jugador;
 import edu.trespor2.videojuego.model.environment.Dungeon;
 import edu.trespor2.videojuego.model.environment.Room;
+import edu.trespor2.videojuego.model.environment.Door; // Importación necesaria para el cambio de sala
 import edu.trespor2.videojuego.view.GameRenderer;
 import edu.trespor2.videojuego.view.HUD;
 import edu.trespor2.videojuego.view.SpriteManager;
@@ -28,7 +29,7 @@ public class GameLoop extends AnimationTimer {
     public enum Estado { MENU, JUGANDO, TIENDA, GAME_OVER }
     private Estado estadoActual = Estado.MENU;
 
-    // libreria de java fx
+    // Librería de JavaFX
     private final GraphicsContext gc;
     private final double ancho;
     private final double alto;
@@ -37,14 +38,14 @@ public class GameLoop extends AnimationTimer {
     private final InputHandler inputHandler;
     private final CollisionManager collisionManager;
 
-    // como se vera
+    // Vistas
     private final GameRenderer renderer;
     private final HUD hud;
     private final MenuScreen menuScreen;
     private final GameOverScreen gameOverScreen;
     private ShopScreen shopScreen;
 
-    //modelos
+    // Modelos
     private Jugador jugador;
     private Dungeon dungeon;
     private List<Proyectiles> proyectiles;
@@ -58,9 +59,7 @@ public class GameLoop extends AnimationTimer {
     private double mouseClickX = -1;
     private double mouseClickY = -1;
 
-
-    //  CONSTRUCTOR
-
+    // --- CONSTRUCTOR ---
     public GameLoop(Canvas canvas, Scene scene) {
         this.gc    = canvas.getGraphicsContext2D();
         this.ancho = canvas.getWidth();
@@ -87,9 +86,7 @@ public class GameLoop extends AnimationTimer {
         });
     }
 
-
-    //  HANDLE — Se llama a 6o frames por segundo
-
+    // --- HANDLE ---
     @Override
     public void handle(long ahora) {
         if (tiempoAnterior < 0) { tiempoAnterior = ahora; return; }
@@ -107,8 +104,7 @@ public class GameLoop extends AnimationTimer {
         mouseClickY = -1;
     }
 
-
-    //  ESTADOS
+    // --- MANEJO DE ESTADOS ---
 
     private void manejarMenu() {
         menuScreen.actualizarMouse(mouseX, mouseY);
@@ -126,31 +122,47 @@ public class GameLoop extends AnimationTimer {
     private void manejarJuego(double delta) {
         procesarInputJugador();
 
-        // checar los cadaveres y limpiar la sala
+        // Limpiar enemigos muertos
         dungeon.getSalaActual().getEnemigos().removeIf(e -> e.estaMuerto());
 
-        // Resolver colisión con paredes ANTES de mover al jugador
+        // Colisión con paredes
         double[] dirAjustada = collisionManager.resolverColisionParedes(jugador, dungeon.getSalaActual());
         jugador.setDx(dirAjustada[0]);
         jugador.setDy(dirAjustada[1]);
 
         jugador.update(delta);
 
-        // Hacer que los enemigos persigan al jugador y luego se actualicen
+        // Actualizar enemigos
         dungeon.getSalaActual().getEnemigos().forEach(e -> {
             ((edu.trespor2.videojuego.model.entidades.personajes.Enemigo) e).perseguir(jugador);
             e.update(delta);
         });
 
+        // Actualizar proyectiles
         proyectiles.forEach(p -> p.update(delta));
-        proyectiles.removeIf(p -> p.getX() < 0 || p.getX() > ancho
-                || p.getY() < 0 || p.getY() > alto);
+        proyectiles.removeIf(p -> p.getX() < 0 || p.getX() > ancho || p.getY() < 0 || p.getY() > alto);
 
+        // Colisiones generales (Personajes y Proyectiles)
         collisionManager.checkCollisions(jugador, dungeon.getSalaActual().getEnemigos(), proyectiles);
+
+        // --- LÓGICA COMBINADA DE OBJETOS Y SALAS ---
+
+        // 1. Actualizar estado de la sala (abrir puertas si no hay enemigos)
         dungeon.getSalaActual().actualizarEstadoSala();
+
+        // 2. Revisar colisión con COFRES (del primer código)
         collisionManager.checkCofres(jugador, dungeon.getSalaActual().getCofres());
 
-        if (dungeon.getSalaActual().getTipo() == edu.trespor2.videojuego.model.environment.Room.TipoSala.TIENDA) {
+        // 3. Revisar colisión con PUERTAS para cambio de sala (del segundo código)
+        Door puertaCruzada = collisionManager.verificarColisionPuerta(jugador, dungeon.getSalaActual().getPuertas());
+        if (puertaCruzada != null) {
+            dungeon.cambiarSala(puertaCruzada, jugador);
+            proyectiles.clear(); // Limpiar proyectiles al cambiar de sala
+        }
+
+        // -------------------------------------------
+
+        if (dungeon.getSalaActual().getTipo() == Room.TipoSala.TIENDA) {
             estadoActual = Estado.TIENDA;
         }
 
@@ -164,7 +176,6 @@ public class GameLoop extends AnimationTimer {
 
     private void manejarTienda() {
         shopScreen.render(gc, jugador, ancho, alto);
-
         if (mouseClickX >= 0) {
             boolean salir = shopScreen.onClick(mouseClickX, mouseClickY);
             if (salir) estadoActual = Estado.JUGANDO;
@@ -173,7 +184,6 @@ public class GameLoop extends AnimationTimer {
 
     private void manejarGameOver() {
         gameOverScreen.render(gc, ancho, alto);
-
         if (mouseClickX >= 0) {
             if (gameOverScreen.isReiniciarPresionado(mouseClickX, mouseClickY)) {
                 iniciarJuego("carlos");
@@ -183,22 +193,17 @@ public class GameLoop extends AnimationTimer {
         }
     }
 
-    //  UTILIDADES
+    // --- UTILIDADES ---
 
     private void iniciarJuego(String personaje) {
+        int colsSala  = (int)(ancho / Room.TILE_SIZE);
+        int filasSala = (int)(alto  / Room.TILE_SIZE);
 
-        // llena la sala
-        // quedan dentro de la sala misma
-        int colsSala  = (int)(ancho / Room.TILE_SIZE);  // 1280/32 = 40
-        int filasSala = (int)(alto  / Room.TILE_SIZE);  // 720/32  = 22
-
-        // logica de como empieza la sala
         Room.inicializarOffset(ancho, alto, colsSala, filasSala);
 
         dungeon     = new Dungeon(colsSala, filasSala);
         proyectiles = new ArrayList<>();
 
-        // spawnear el jugador enmedio de la sala
         Room salaInicial = dungeon.getSalaActual();
         double spawnX = salaInicial.getCentroX() - 48;
         double spawnY = salaInicial.getCentroY() - 48;
@@ -211,7 +216,6 @@ public class GameLoop extends AnimationTimer {
     }
 
     private void procesarInputJugador() {
-        // moverse con W, A, S, D.
         double dx = 0, dy = 0;
         if (inputHandler.isKeyPressed(KeyCode.W)) dy = -1;
         if (inputHandler.isKeyPressed(KeyCode.S)) dy =  1;
@@ -219,9 +223,9 @@ public class GameLoop extends AnimationTimer {
         if (inputHandler.isKeyPressed(KeyCode.D)) dx =  1;
 
         jugador.setDx(dx);
+
         jugador.setDy(dy);
 
-        // disparar solo con ⇢ ⇡ ⇣ ⇠
         double dirDisparoX = 0, dirDisparoY = 0;
         boolean quiereDisparar = false;
 
