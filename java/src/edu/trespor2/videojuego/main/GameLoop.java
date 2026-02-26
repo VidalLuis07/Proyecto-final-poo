@@ -24,43 +24,43 @@ import java.util.List;
 
 public class GameLoop extends AnimationTimer {
 
-    // ── Estados posibles del juego ─────────────────────────────────────────
+    // Estados posibles del juego
     public enum Estado { MENU, JUGANDO, TIENDA, GAME_OVER }
     private Estado estadoActual = Estado.MENU;
 
-    // ── JavaFX ────────────────────────────────────────────────────────────
+    // libreria de java fx
     private final GraphicsContext gc;
     private final double ancho;
     private final double alto;
 
-    // ── Controladores ─────────────────────────────────────────────────────
+    // Controladores
     private final InputHandler inputHandler;
     private final CollisionManager collisionManager;
 
-    // ── Vista ─────────────────────────────────────────────────────────────
+    // como se vera
     private final GameRenderer renderer;
     private final HUD hud;
     private final MenuScreen menuScreen;
     private final GameOverScreen gameOverScreen;
     private ShopScreen shopScreen;
 
-    // ── Modelo ────────────────────────────────────────────────────────────
+    //modelos
     private Jugador jugador;
     private Dungeon dungeon;
     private List<Proyectiles> proyectiles;
 
-    // ── Control de tiempo ─────────────────────────────────────────────────
+    // Control de tiempo
     private long tiempoAnterior = -1;
 
-    // ── Mouse ─────────────────────────────────────────────────────────────
+    // Mouse
     private double mouseX      = 0;
     private double mouseY      = 0;
     private double mouseClickX = -1;
     private double mouseClickY = -1;
 
-    // ══════════════════════════════════════════════════════════════════════
+
     //  CONSTRUCTOR
-    // ══════════════════════════════════════════════════════════════════════
+
     public GameLoop(Canvas canvas, Scene scene) {
         this.gc    = canvas.getGraphicsContext2D();
         this.ancho = canvas.getWidth();
@@ -87,9 +87,9 @@ public class GameLoop extends AnimationTimer {
         });
     }
 
-    // ══════════════════════════════════════════════════════════════════════
-    //  HANDLE — Se llama ~60 veces por segundo
-    // ══════════════════════════════════════════════════════════════════════
+
+    //  HANDLE — Se llama a 6o frames por segundo
+
     @Override
     public void handle(long ahora) {
         if (tiempoAnterior < 0) { tiempoAnterior = ahora; return; }
@@ -107,9 +107,9 @@ public class GameLoop extends AnimationTimer {
         mouseClickY = -1;
     }
 
-    // ══════════════════════════════════════════════════════════════════════
+
     //  ESTADOS
-    // ══════════════════════════════════════════════════════════════════════
+
     private void manejarMenu() {
         menuScreen.actualizarMouse(mouseX, mouseY);
         menuScreen.render(gc, ancho, alto);
@@ -125,7 +125,8 @@ public class GameLoop extends AnimationTimer {
 
     private void manejarJuego(double delta) {
         procesarInputJugador();
-
+        // checar los cadaveres y limpiar la sala
+        dungeon.getSalaActual().getEnemigos().removeIf(e -> e.estaMuerto());
         // Resolver colisión con paredes ANTES de mover al jugador
         double[] dirAjustada = collisionManager.resolverColisionParedes(jugador, dungeon.getSalaActual());
         jugador.setDx(dirAjustada[0]);
@@ -179,9 +180,8 @@ public class GameLoop extends AnimationTimer {
         }
     }
 
-    // ══════════════════════════════════════════════════════════════════════
     //  UTILIDADES
-    // ══════════════════════════════════════════════════════════════════════
+
     private void iniciarJuego(String personaje) {
 
         // La sala llena TODA la pantalla — los 2 tiles de vacío + 1 de pared
@@ -208,23 +208,27 @@ public class GameLoop extends AnimationTimer {
     }
 
     private void procesarInputJugador() {
+        // moverse con W, A, S, D.
         double dx = 0, dy = 0;
-
-        if (inputHandler.isKeyPressed(KeyCode.W) || inputHandler.isKeyPressed(KeyCode.UP))    dy = -1;
-        if (inputHandler.isKeyPressed(KeyCode.S) || inputHandler.isKeyPressed(KeyCode.DOWN))  dy =  1;
-        if (inputHandler.isKeyPressed(KeyCode.A) || inputHandler.isKeyPressed(KeyCode.LEFT))  dx = -1;
-        if (inputHandler.isKeyPressed(KeyCode.D) || inputHandler.isKeyPressed(KeyCode.RIGHT)) dx =  1;
+        if (inputHandler.isKeyPressed(KeyCode.W)) dy = -1;
+        if (inputHandler.isKeyPressed(KeyCode.S)) dy =  1;
+        if (inputHandler.isKeyPressed(KeyCode.A)) dx = -1;
+        if (inputHandler.isKeyPressed(KeyCode.D)) dx =  1;
 
         jugador.setDx(dx);
         jugador.setDy(dy);
 
-        if (inputHandler.isKeyPressed(KeyCode.SPACE)) {
-            double dirX = jugador.getDx() != 0 ? jugador.getDx() : jugador.getUltimaDirX();
-            double dirY = jugador.getDy() != 0 ? jugador.getDy() : jugador.getUltimaDirY();
-            // Solo disparar si no está ya atacando (evita spam de proyectiles)
-            if (!jugador.isAtacando()) {
-                proyectiles.add(jugador.disparar(dirX, dirY));
-            }
+        // disparar solo con ⇢ ⇡ ⇣ ⇠
+        double dirDisparoX = 0, dirDisparoY = 0;
+        boolean quiereDisparar = false;
+
+        if (inputHandler.isKeyPressed(KeyCode.UP))    { dirDisparoY = -1; quiereDisparar = true; }
+        if (inputHandler.isKeyPressed(KeyCode.DOWN))  { dirDisparoY =  1; quiereDisparar = true; }
+        if (inputHandler.isKeyPressed(KeyCode.LEFT))  { dirDisparoX = -1; quiereDisparar = true; }
+        if (inputHandler.isKeyPressed(KeyCode.RIGHT)) { dirDisparoX =  1; quiereDisparar = true; }
+
+        if (quiereDisparar && !jugador.isAtacando() && jugador.puedeDisparar()) {
+            proyectiles.add(jugador.disparar(dirDisparoX, dirDisparoY));
         }
     }
 }

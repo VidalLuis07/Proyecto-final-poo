@@ -21,7 +21,8 @@ public class CollisionManager {
             for (int j = 0; j < enemigos.size(); j++) {
                 Enemigo enemigo = enemigos.get(j);
 
-                if (proyectil.getBounds().intersects(enemigo.getBounds())) {
+                // verificar el estado del enemigo al impactar
+                if (!enemigo.estaMuerto() && proyectil.getBounds().intersects(enemigo.getBounds())) {
                     enemigo.recibirDano(proyectil.getDano());
                     proyectilesJugador.remove(i);
                     i--;
@@ -29,9 +30,9 @@ public class CollisionManager {
                 }
             }
         }
-
+        // si eliminamos al enemigo desaparece
         for (Enemigo enemigo : enemigos) {
-            if (enemigo.getBounds().intersects(jugador.getBounds())) {
+            if (!enemigo.estaMuerto() && enemigo.getBounds().intersects(jugador.getBounds())) {
                 if (enemigo instanceof Zombie) {
                     ((Zombie) enemigo).atacar(jugador);
                 }
@@ -39,7 +40,7 @@ public class CollisionManager {
         }
     }
 
-    /* COLISIÓN CON PAREDES */
+    //COLISIÓN CON PAREDES
     public double[] resolverColisionParedes(EntidadMovible entidad, Room sala) {
         Tile[][] tiles = sala.getMapaTiles();
         if (tiles == null) return new double[]{entidad.getDx(), entidad.getDy()};
@@ -56,13 +57,13 @@ public class CollisionManager {
         double w = entidad.getWidth();
         double h = entidad.getHeight();
 
-        // ── Checar movimiento en X ──────────────────────────────────────
+        // Checar movimiento en X
         Rectangle2D rectX = new Rectangle2D(futuroX, entidad.getY(), w, h);
         if (colisionaConPared(rectX, tiles, tileSize)) {
             nuevaDx = 0;
         }
 
-        // ── Checar movimiento en Y ──────────────────────────────────────
+        // Checar movimiento en Y
         Rectangle2D rectY = new Rectangle2D(entidad.getX(), futuroY, w, h);
         if (colisionaConPared(rectY, tiles, tileSize)) {
             nuevaDy = 0;
@@ -73,7 +74,7 @@ public class CollisionManager {
 
     // Revisa si un rectángulo choca con algún tile no transitable
     private boolean colisionaConPared(Rectangle2D rect, Tile[][] tiles, int tileSize) {
-        // Los 4 tiles que toca el rectángulo (esquinas)
+        // Los 4 tiles que toca el rectángulo
         int colMin = (int)((rect.getMinX() - Room.getOffsetX()) / tileSize);
         int colMax = (int)((rect.getMaxX() - Room.getOffsetX() - 1) / tileSize);
         int filaMin = (int)((rect.getMinY() - Room.getOffsetY()) / tileSize);
@@ -82,7 +83,7 @@ public class CollisionManager {
         for (int col = colMin; col <= colMax; col++) {
             for (int fila = filaMin; fila <= filaMax; fila++) {
                 if (col < 0 || fila < 0 || col >= tiles.length || fila >= tiles[col].length) {
-                    return true; // fuera del mapa = pared
+                    return true;
                 }
                 Tile tile = tiles[col][fila];
                 if (tile != null && !tile.isTransitable()) {

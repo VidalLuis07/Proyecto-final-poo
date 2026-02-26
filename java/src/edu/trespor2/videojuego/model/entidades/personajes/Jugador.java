@@ -6,14 +6,16 @@ public class Jugador extends GameCharacter {
 
     private String nombreSprite; // "carlos" o "carla"
 
-    // ── Estado de ataque ───────────────────────────────────────────────────
+    // Estado de ataque
     private boolean atacando = false;
-    private int frameAtaque  = 0;          // frame actual de la animación (0,1,2)
-    private static final int FRAMES_ATAQUE = 3;
+    private int frameAtaque  = 1;
+    private static final int FRAMES_ATAQUE = 5;
     private static final int DURACION_FRAME = 5; // cuántos ticks dura cada frame
     private int contadorAtaque = 0;
+    private int cooldownDisparo = 0;
+    private static final int MAX_COOLDOWN_DISPARO = 40;
 
-    // Última dirección usada (para saber hacia dónde atacar si está quieto)
+    // Última dirección usada
     private double ultimaDirX = 0;
     private double ultimaDirY = 1; // por defecto mira al frente
 
@@ -25,12 +27,12 @@ public class Jugador extends GameCharacter {
 
     public String getNombreSprite() { return nombreSprite; }
 
-    // ── Actualizar dirección recordada ────────────────────────────────────
+    // actualizar la direccion
     @Override
     public void update(double delta) {
-        if (dx != 0 || dy != 0) {
-            ultimaDirX = dx;
-            ultimaDirY = dy;
+        // Reducir el tiempo de recarga en cada frame
+        if (cooldownDisparo > 0) {
+            cooldownDisparo--;
         }
 
         // Avanzar animación de ataque
@@ -48,21 +50,38 @@ public class Jugador extends GameCharacter {
 
         super.update(delta);
     }
+    // metodo para saber si el arma esta lista (cooldown)
+    public boolean puedeDisparar() {
+        return cooldownDisparo <= 0;
+    }
 
-    // ── Disparo — lanza una daga en la dirección indicada ─────────────────
+    // lanza una daga en la dirección indicada
     public Proyectiles disparar(double direccionX, double direccionY) {
-        // Activar animación de ataque
+        // animación de ataque
         atacando = true;
         frameAtaque = 0;
         contadorAtaque = 0;
+        cooldownDisparo = MAX_COOLDOWN_DISPARO;
 
-        double balaX = this.x + (this.width  / 2) - 48; // centrar daga (48 = mitad de 96)
-        double balaY = this.y + (this.height * 0.3);     // altura del torso (~30% desde arriba)
-        // El proyectil lleva flag isDaga=true para que el renderer lo dibuje con sprite
-        return new Proyectiles(balaX, balaY, 60, 60, 7.0, direccionX, direccionY, 1, true);
+
+        // Encontrar el centro exacto jugador 96*96 y bala 60*60
+        double centroJugadorX = this.x + (this.width / 2);
+        double centroJugadorY = this.y + (this.height / 2);
+
+        // centra la bala
+        double balaX = centroJugadorX - 30;
+        double balaY = centroJugadorY - 30;
+
+        // la bala sale de fuera del cuerpo del jugador
+        balaX += direccionX * 40;
+        balaY += direccionY * 40;
+
+        // El proyectil lleva 1 de daño y sus respectivos parametros
+        return new Proyectiles(balaX, balaY, 60, 60, 2.5, direccionX, direccionY, 1, true);
     }
 
-    // ── Getters para el renderer ──────────────────────────────────────────
+
+    // Getters para el render
     public boolean isAtacando()    { return atacando; }
     public int getFrameAtaque()    { return frameAtaque; }
     public double getUltimaDirX()  { return ultimaDirX; }
