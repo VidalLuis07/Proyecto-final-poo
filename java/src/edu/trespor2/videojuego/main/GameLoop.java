@@ -125,8 +125,10 @@ public class GameLoop extends AnimationTimer {
 
     private void manejarJuego(double delta) {
         procesarInputJugador();
+
         // checar los cadaveres y limpiar la sala
         dungeon.getSalaActual().getEnemigos().removeIf(e -> e.estaMuerto());
+
         // Resolver colisión con paredes ANTES de mover al jugador
         double[] dirAjustada = collisionManager.resolverColisionParedes(jugador, dungeon.getSalaActual());
         jugador.setDx(dirAjustada[0]);
@@ -146,6 +148,7 @@ public class GameLoop extends AnimationTimer {
 
         collisionManager.checkCollisions(jugador, dungeon.getSalaActual().getEnemigos(), proyectiles);
         dungeon.getSalaActual().actualizarEstadoSala();
+        collisionManager.checkCofres(jugador, dungeon.getSalaActual().getCofres());
 
         if (dungeon.getSalaActual().getTipo() == edu.trespor2.videojuego.model.environment.Room.TipoSala.TIENDA) {
             estadoActual = Estado.TIENDA;

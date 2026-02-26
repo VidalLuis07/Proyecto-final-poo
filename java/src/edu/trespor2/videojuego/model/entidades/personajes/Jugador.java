@@ -14,6 +14,7 @@ public class Jugador extends GameCharacter {
     private int contadorAtaque = 0;
     private int cooldownDisparo = 0;
     private static final int MAX_COOLDOWN_DISPARO = 40;
+    private int dinero = 0;
 
     // Última dirección usada
     private double ultimaDirX = 0;
@@ -80,6 +81,8 @@ public class Jugador extends GameCharacter {
         return new Proyectiles(balaX, balaY, 60, 60, 2.5, direccionX, direccionY, 1, true);
     }
 
+    public int getDinero() { return dinero; }
+    public void sumarDinero(int cantidad) { this.dinero += cantidad; }
 
     // Getters para el render
     public boolean isAtacando()    { return atacando; }

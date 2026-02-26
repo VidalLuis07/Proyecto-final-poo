@@ -6,6 +6,7 @@ import edu.trespor2.videojuego.model.entidades.personajes.Enemigo;
 import edu.trespor2.videojuego.model.entidades.personajes.Jugador;
 import edu.trespor2.videojuego.model.entidades.personajes.Zombie;
 import edu.trespor2.videojuego.model.environment.Room;
+import edu.trespor2.videojuego.model.items.Chest;
 import edu.trespor2.videojuego.model.environment.Tile;
 import javafx.geometry.Rectangle2D;
 
@@ -70,6 +71,17 @@ public class CollisionManager {
         }
 
         return new double[]{nuevaDx, nuevaDy};
+    }
+
+    public void checkCofres(Jugador jugador, List<Chest> cofres) {
+        for (Chest cofre : cofres) {
+            // abrir el cofre
+            if (!cofre.isAbierto() && jugador.getBounds().intersects(cofre.getBounds())) {
+                int monedasGeneradas = cofre.abrir();
+                jugador.sumarDinero(monedasGeneradas);
+                System.out.println("¡Abriste un cofre! Ganaste " + monedasGeneradas + " monedas.");
+            }
+        }
     }
 
     // Revisa si un rectángulo choca con algún tile no transitable
