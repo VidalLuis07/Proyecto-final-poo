@@ -2,6 +2,7 @@ package edu.trespor2.videojuego.main;
 
 import edu.trespor2.videojuego.controller.CollisionManager;
 import edu.trespor2.videojuego.controller.InputHandler;
+import edu.trespor2.videojuego.model.IdiomaManager;
 import edu.trespor2.videojuego.model.entidades.Proyectiles;
 import edu.trespor2.videojuego.model.entidades.personajes.Jugador;
 import edu.trespor2.videojuego.model.environment.Dungeon;
@@ -113,14 +114,18 @@ public class GameLoop extends AnimationTimer {
     private void manejarMenu() {
         menuScreen.actualizarMouse(mouseX, mouseY);
         menuScreen.render(gc, ancho, alto);
-
         if (mouseClickX >= 0) {
+            if (menuScreen.isIdiomaPresionado(mouseClickX, mouseClickY)) {
+                // Alterna ES ↔ EN al hacer clic en el botón ESP/ENG
+                IdiomaManager.getInstance().toggleIdioma();
+            }
             if (menuScreen.isJugarPresionado(mouseClickX, mouseClickY)) {
                 iniciarJuego("carlos");
             } else if (menuScreen.isSalirPresionado(mouseClickX, mouseClickY)) {
                 System.exit(0);
             }
         }
+
     }
 
     private void manejarJuego(double delta) {
@@ -178,6 +183,7 @@ public class GameLoop extends AnimationTimer {
                 estadoActual = Estado.MENU;
             }
         }
+        gameOverScreen.actualizarMouse(mouseX, mouseY);
     }
 
     //  UTILIDADES

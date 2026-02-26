@@ -53,14 +53,6 @@ public class SpriteManager {
                 "/assets/images/carlosDerecha.png",
                 32, 32, 4);
 
-        cargarSpritesheetPorDireccion(
-                "carla",
-                "/assets/images/karlaFrente.png",
-                "/assets/images/karlaDetras.png",
-                "/assets/images/karlaIzquierda.png",
-                "/assets/images/karlaDerecha.png",
-                32, 32, 4);
-
         // ── Animaciones de ataque con daga ─────────────────────────────────
         // Frente y atrás: cada frame mide 32x40 (3 frames = 96px de ancho)
         // Izquierda y derecha: cada frame mide 40x32 (3 frames = 120px de ancho)
@@ -78,9 +70,28 @@ public class SpriteManager {
 
         //MENU
         cargarImagen("menu_fondo",   "/assets/images/1.png");
+        // ── Botones de MENÚ con soporte de idioma ─────────────────────────
         cargarImagen("boton_start",  "/assets/images/2.png");
         cargarImagen("boton_exit",   "/assets/images/3.png");
 
+        // ── Botones de MENÚ con soporte de idioma ─────────────────────────
+        cargarImagen("boton_iniciar", "/assets/images/iniciar.png");  // ES
+        cargarImagen("boton_salir",   "/assets/images/salir.png");    // ES
+
+        // ── Botón de cambio de idioma ──────────────────────────────────────
+        // Muestra ESP cuando el juego está en español (para cambiar a inglés)
+        // Muestra ENG cuando el juego está en inglés  (para cambiar a español)
+        cargarImagen("boton_lang_esp", "/assets/images/esp.png");     // se muestra cuando idioma=ES
+        cargarImagen("boton_lang_eng", "/assets/images/eng.png");     // se muestra cuando idioma=EN
+
+        // ── Game Over ──────────────────────────────────────────────────────
+        cargarImagen("gameover_en",   "/assets/images/GameOver.png");
+        cargarImagen("gameover_es",   "/assets/images/perdiste.png");
+
+        // ── Botones YES / NO / SÍ ─────────────────────────────────────────
+        cargarImagen("boton_yes",     "/assets/images/yes.png");
+        cargarImagen("boton_no",      "/assets/images/no.png");
+        cargarImagen("boton_si",      "/assets/images/si.png");
         // ── Tiles del mapa ─────────────────────────────────────────────────
         cargarImagen("tile_vacio",  "/assets/sprites/mapa/tile_vacio.png");
         cargarImagen("tile_piso",   "/assets/sprites/mapa/tile_piso.png");
