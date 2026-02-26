@@ -184,18 +184,18 @@ public class GameLoop extends AnimationTimer {
 
     private void iniciarJuego(String personaje) {
 
-        // La sala llena TODA la pantalla — los 2 tiles de vacío + 1 de pared
-        // quedan dentro de la sala misma (no hay margen externo)
+        // llena la sala
+        // quedan dentro de la sala misma
         int colsSala  = (int)(ancho / Room.TILE_SIZE);  // 1280/32 = 40
         int filasSala = (int)(alto  / Room.TILE_SIZE);  // 720/32  = 22
 
-        // 1) Offset = 0 para que la sala empiece en la esquina (0,0)
+        // logica de como empieza la sala
         Room.inicializarOffset(ancho, alto, colsSala, filasSala);
 
         dungeon     = new Dungeon(colsSala, filasSala);
         proyectiles = new ArrayList<>();
 
-        // 2) Spawnear jugador en el centro de la sala
+        // spawnear el jugador enmedio de la sala
         Room salaInicial = dungeon.getSalaActual();
         double spawnX = salaInicial.getCentroX() - 48;
         double spawnY = salaInicial.getCentroY() - 48;

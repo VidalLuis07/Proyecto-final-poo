@@ -10,7 +10,7 @@ public abstract class GameCharacter extends EntidadMovible implements IDamageabl
 
     // Quitamos la palabra "final" y la cambiamos a minúsculas para poder modificarla
     protected int ticksInvulnerables = 0;
-    protected int MAX_TICKS_INVULNERABLES = 60; // Por defecto 60 (para el jugador)
+    protected int MAX_TICKS_INVULNERABLES = 60; // Por defecto 60
 
     public GameCharacter(double x, double y, double width, double height, double velocidad, int vidaMaxima) {
         super(x, y, width, height, velocidad);

@@ -4,7 +4,7 @@ import edu.trespor2.videojuego.model.entidades.Entidad;
 
 public class Tile extends Entidad {
 
-    // ── Tipo de tile ───────────────────────────────────────────────────────
+    // ── Tipo de tile
     public enum TipoTile { VACIO, PARED, PISO }
 
     private boolean transitable;

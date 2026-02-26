@@ -108,7 +108,7 @@ public class Dungeon {
     private void spawnearEnemigos(Room sala, Random rand) {
         int cantidad = sala.getTipo() == Room.TipoSala.JEFE ? 1 : rand.nextInt(3) + 2; // 2-4 zombies, 1 boss
 
-        // Area transitable: empieza en tile 3 (después de 2 vacío + 1 pared)
+        // delimita el area para moverse
         int tileInicio = 3;
         int tileFinCol  = colsSala  - 4; // deja margen al otro lado
         int tileFinFila = filasSala - 4;
