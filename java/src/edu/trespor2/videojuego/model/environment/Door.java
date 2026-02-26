@@ -6,9 +6,10 @@ public class Door extends Entidad {
 
     private boolean abierta;
     private Room salaDestino;
-    private String posicionBorde;
+    private String posicionBorde; // Indica si la puerta está al NORTE, SUR, ESTE u OESTE
 
     public Door(double x, double y, String posicionBorde, Room salaDestino) {
+        // Hereda de Entidad (x, y, ancho, alto)
         super(x, y, 32, 32);
         this.abierta = false;
         this.posicionBorde = posicionBorde;
@@ -19,14 +20,14 @@ public class Door extends Entidad {
         return abierta;
     }
 
-
     public void abrir() {
         this.abierta = true;
+        // Aquí podrías añadir lógica para cambiar el frame del sprite a "abierto"
     }
 
     public void cerrar() {
         this.abierta = false;
-        // Cambiar la textura a rojo
+        // Nota: Cambiar la textura a rojo o estado bloqueado en el GameRenderer
     }
 
     public Room getSalaDestino() {
