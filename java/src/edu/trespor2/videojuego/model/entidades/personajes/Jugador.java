@@ -78,7 +78,7 @@ public class Jugador extends GameCharacter {
         balaY += direccionY * 40;
 
         // El proyectil lleva 1 de daño y sus respectivos parametros
-        return new Proyectiles(balaX, balaY, 60, 60, 2.5, direccionX, direccionY, 100, true);
+        return new Proyectiles(balaX, balaY, 60, 60, 2.5, direccionX, direccionY,  10, true);
     }
 
     public int getDinero() { return dinero; }

@@ -141,8 +141,26 @@ public class Room {
                 else posicionValida = true;
             }
 
-            Zombie nuevoZombie = new Zombie(pixelX, pixelY, 32, 32, 0.6, 5);
-            this.addEnemigo(nuevoZombie);
+            // NUEVA LÓGICA DE TAMAÑOS Y STATS
+            if (posicionValida) {
+                double tamaño;
+                int vida;
+                double velocidad;
+
+                // 20% de probabilidad de ser un zombie grande
+                if (random.nextDouble() < 0.20) {
+                    tamaño = 64;     // Más grande
+                    vida = 50;       // Más vida
+                    velocidad = 0.4; // Más lento
+                } else {
+                    tamaño = 32;     // Tamaño normal
+                    vida = 30;        // Vida normal
+                    velocidad = 0.6; // Velocidad normal
+                }
+
+                Zombie nuevoZombie = new Zombie(pixelX, pixelY, tamaño, tamaño, velocidad, vida);
+                this.addEnemigo(nuevoZombie);
+            }
         }
     }
 
