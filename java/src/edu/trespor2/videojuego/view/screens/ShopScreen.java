@@ -25,7 +25,7 @@ public class ShopScreen {
     private final SpriteManager sprites;
     private final ControlTienda controlTienda;
 
-    // ── Posiciones de los botones de compra ───────────────────────────────
+    //Posiciones de los botones de compra
     private static final double BTN_VIDA_X      = 150;
     private static final double BTN_VIDA_Y      = 350;
     private static final double BTN_VELOCIDAD_X = 320;
@@ -47,9 +47,9 @@ public class ShopScreen {
         this.controlTienda = new ControlTienda(jugador);
     }
 
-    // ══════════════════════════════════════════════════════════════════════
+
     //  RENDER
-    // ══════════════════════════════════════════════════════════════════════
+
     public void render(GraphicsContext gc, Jugador jugador,
                        double anchoCanvas, double altoCanvas) {
 
@@ -92,9 +92,9 @@ public class ShopScreen {
         }
     }
 
-    // ══════════════════════════════════════════════════════════════════════
+
     //  MANEJO DE CLICS — El GameLoop llama esto cuando hay un clic en modo TIENDA
-    // ══════════════════════════════════════════════════════════════════════
+
 
     /**
      * Procesa un clic del mouse. Delega la lógica a ControlTienda.
@@ -121,7 +121,7 @@ public class ShopScreen {
         return false;
     }
 
-    // ── Utilidades ─────────────────────────────────────────────────────────
+    // Utilidades
 
     private void dibujarBotonItem(GraphicsContext gc, String nombre, String precio,
                                   double x, double y, double ancho, double alto, Color color) {
