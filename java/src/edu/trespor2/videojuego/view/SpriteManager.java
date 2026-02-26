@@ -71,27 +71,27 @@ public class SpriteManager {
         //MENU
         cargarImagen("menu_fondo",   "/assets/images/1.png");
         // ── Botones de MENÚ con soporte de idioma ─────────────────────────
-        cargarImagen("boton_start",  "/assets/images/2.png");
-        cargarImagen("boton_exit",   "/assets/images/3.png");
+        cargarImagen("boton_start", "/assets/Idioma/2.png");
+        cargarImagen("boton_exit", "/assets/Idioma/3.png");
 
         // ── Botones de MENÚ con soporte de idioma ─────────────────────────
-        cargarImagen("boton_iniciar", "/assets/images/iniciar.png");  // ES
-        cargarImagen("boton_salir",   "/assets/images/salir.png");    // ES
+        cargarImagen("boton_iniciar", "/assets/Idioma/iniciar.png");  // ES
+        cargarImagen("boton_salir", "/assets/Idioma/salir.png");    // ES
 
         // ── Botón de cambio de idioma ──────────────────────────────────────
         // Muestra ESP cuando el juego está en español (para cambiar a inglés)
         // Muestra ENG cuando el juego está en inglés  (para cambiar a español)
-        cargarImagen("boton_lang_esp", "/assets/images/esp.png");     // se muestra cuando idioma=ES
-        cargarImagen("boton_lang_eng", "/assets/images/eng.png");     // se muestra cuando idioma=EN
+        cargarImagen("boton_lang_esp", "/assets/Idioma/esp.png");     // se muestra cuando idioma=ES
+        cargarImagen("boton_lang_eng", "/assets/Idioma/eng.png");     // se muestra cuando idioma=EN
 
         // ── Game Over ──────────────────────────────────────────────────────
-        cargarImagen("gameover_en",   "/assets/images/GameOver.png");
-        cargarImagen("gameover_es",   "/assets/images/perdiste.png");
+        cargarImagen("gameover_en", "/assets/Idioma/GameOver.png");
+        cargarImagen("gameover_es", "/assets/Idioma/perdiste.png");
 
         // ── Botones YES / NO / SÍ ─────────────────────────────────────────
-        cargarImagen("boton_yes",     "/assets/images/yes.png");
-        cargarImagen("boton_no",      "/assets/images/no.png");
-        cargarImagen("boton_si",      "/assets/images/si.png");
+        cargarImagen("boton_yes", "/assets/Idioma/yes.png");
+        cargarImagen("boton_no", "/assets/Idioma/no.png");
+        cargarImagen("boton_si", "/assets/Idioma/si.png");
         // ── Tiles del mapa ─────────────────────────────────────────────────
         cargarImagen("tile_vacio",  "/assets/sprites/mapa/tile_vacio.png");
         cargarImagen("tile_piso",   "/assets/sprites/mapa/tile_piso.png");
@@ -100,6 +100,21 @@ public class SpriteManager {
         //Corazones
         cargarImagen("corazon_lleno", "/assets/images/corazon.png");
         cargarImagen("corazon_vacio", "/assets/images/corazonVacio.png");
+
+        // ── Cofres ────────────────────────────────────────────────────────
+        cargarImagen("cofre_cerrado", "/assets/images/Cofre cerradooo.png");
+        cargarImagen("cofre_abierto", "/assets/images/Cofre abiertoo.png");
+
+        // ── Moneda ────────────────────────────────────────────────────────
+        cargarImagen("moneda", "/assets/Idioma/monedas.png");
+
+        // ── Powerups (tienda) ─────────────────────────────────────────────
+        cargarImagen("powerup_fuego_mortal",  "/assets/powerups/fuegoMortal.png");
+        cargarImagen("powerup_fuego_veloz",   "/assets/powerups/fuegoVeloz.png");
+        cargarImagen("powerup_fire_velocity", "/assets/powerups/fireVelocity.png");
+        cargarImagen("powerup_mortal_fire",   "/assets/powerups/mortalFire.png");
+        cargarImagen("powerup_lloros",        "/assets/powerups/lloros.png");
+        cargarImagen("powerup_cries",         "/assets/powerups/cries.png");
     }
 
     /**
