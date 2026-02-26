@@ -2,13 +2,14 @@ package edu.trespor2.videojuego.main;
 
 import edu.trespor2.videojuego.controller.CollisionManager;
 import edu.trespor2.videojuego.controller.InputHandler;
+import edu.trespor2.videojuego.model.IdiomaManager;                        // ← TUYO
 import edu.trespor2.videojuego.model.entidades.Proyectiles;
 import edu.trespor2.videojuego.model.entidades.personajes.Jugador;
 import edu.trespor2.videojuego.model.entidades.personajes.Enemigo;
 import edu.trespor2.videojuego.model.entidades.personajes.Jefe;
 import edu.trespor2.videojuego.model.environment.Dungeon;
 import edu.trespor2.videojuego.model.environment.Room;
-import edu.trespor2.videojuego.model.environment.Door; // Importado del segundo código
+import edu.trespor2.videojuego.model.environment.Door;
 import edu.trespor2.videojuego.view.GameRenderer;
 import edu.trespor2.videojuego.view.HUD;
 import edu.trespor2.videojuego.view.SpriteManager;
@@ -27,41 +28,33 @@ import java.util.List;
 
 public class GameLoop extends AnimationTimer {
 
-    // Estados posibles del juego
     public enum Estado { MENU, JUGANDO, TIENDA, GAME_OVER }
     private Estado estadoActual = Estado.MENU;
 
-    // Librería de JavaFX
     private final GraphicsContext gc;
     private final double ancho;
     private final double alto;
 
-    // Controladores
     private final InputHandler inputHandler;
     private final CollisionManager collisionManager;
 
-    // Vistas
     private final GameRenderer renderer;
     private final HUD hud;
     private final MenuScreen menuScreen;
     private final GameOverScreen gameOverScreen;
     private ShopScreen shopScreen;
 
-    // Modelos
     private Jugador jugador;
     private Dungeon dungeon;
     private List<Proyectiles> proyectiles;
 
-    // Control de tiempo
     private long tiempoAnterior = -1;
 
-    // Mouse
     private double mouseX      = 0;
     private double mouseY      = 0;
     private double mouseClickX = -1;
     private double mouseClickY = -1;
 
-    // --- CONSTRUCTOR ---
     public GameLoop(Canvas canvas, Scene scene) {
         this.gc    = canvas.getGraphicsContext2D();
         this.ancho = canvas.getWidth();
@@ -69,11 +62,10 @@ public class GameLoop extends AnimationTimer {
 
         this.inputHandler     = new InputHandler(scene);
         this.collisionManager = new CollisionManager();
-
-        this.renderer       = new GameRenderer();
-        this.hud            = new HUD();
-        this.menuScreen     = new MenuScreen();
-        this.gameOverScreen = new GameOverScreen();
+        this.renderer         = new GameRenderer();
+        this.hud              = new HUD();
+        this.menuScreen       = new MenuScreen();
+        this.gameOverScreen   = new GameOverScreen();
 
         SpriteManager.getInstance();
 
@@ -81,14 +73,12 @@ public class GameLoop extends AnimationTimer {
             mouseClickX = e.getX();
             mouseClickY = e.getY();
         });
-
         scene.addEventHandler(MouseEvent.MOUSE_MOVED, e -> {
             mouseX = e.getX();
             mouseY = e.getY();
         });
     }
 
-    // --- HANDLE ---
     @Override
     public void handle(long ahora) {
         if (tiempoAnterior < 0) { tiempoAnterior = ahora; return; }
@@ -106,14 +96,14 @@ public class GameLoop extends AnimationTimer {
         mouseClickY = -1;
     }
 
-    // --- MANEJO DE ESTADOS ---
-
     private void manejarMenu() {
         menuScreen.actualizarMouse(mouseX, mouseY);
         menuScreen.render(gc, ancho, alto);
 
         if (mouseClickX >= 0) {
-            if (menuScreen.isJugarPresionado(mouseClickX, mouseClickY)) {
+            if (menuScreen.isIdiomaPresionado(mouseClickX, mouseClickY)) {
+                IdiomaManager.getInstance().toggleIdioma();             // ← TUYO
+            } else if (menuScreen.isJugarPresionado(mouseClickX, mouseClickY)) {
                 iniciarJuego("carlos");
             } else if (menuScreen.isSalirPresionado(mouseClickX, mouseClickY)) {
                 System.exit(0);
@@ -124,16 +114,13 @@ public class GameLoop extends AnimationTimer {
     private void manejarJuego(double delta) {
         procesarInputJugador();
 
-        // 1. Limpiar enemigos muertos
         dungeon.getSalaActual().getEnemigos().removeIf(e -> e.estaMuerto());
 
-        // 2. Colisión con paredes y movimiento del jugador
         double[] dirAjustada = collisionManager.resolverColisionParedes(jugador, dungeon.getSalaActual());
         jugador.setDx(dirAjustada[0]);
         jugador.setDy(dirAjustada[1]);
         jugador.update(delta);
 
-        // 3. Lógica de Enemigos e Invocación del Jefe (Mantenido del Código 1)
         List<Enemigo> nuevosEnemigos = new ArrayList<>();
         dungeon.getSalaActual().getEnemigos().forEach(e -> {
             Enemigo enemigoActual = (Enemigo) e;
@@ -152,24 +139,20 @@ public class GameLoop extends AnimationTimer {
             dungeon.getSalaActual().getEnemigos().addAll(nuevosEnemigos);
         }
 
-        // 4. Actualizar Proyectiles
         proyectiles.forEach(p -> p.update(delta));
         proyectiles.removeIf(p -> p.getX() < 0 || p.getX() > ancho || p.getY() < 0 || p.getY() > alto);
 
-        // 5. Colisiones Generales y Cofres
         collisionManager.checkCollisions(jugador, dungeon.getSalaActual().getEnemigos(), proyectiles);
         collisionManager.checkCofres(jugador, dungeon.getSalaActual().getCofres());
 
-        // 6. Estado de Sala y Cambio de Sala por Puertas (Mantenido del Código 2)
         dungeon.getSalaActual().actualizarEstadoSala();
 
         Door puertaCruzada = collisionManager.verificarColisionPuerta(jugador, dungeon.getSalaActual().getPuertas());
         if (puertaCruzada != null) {
             dungeon.cambiarSala(puertaCruzada, jugador);
-            proyectiles.clear(); // Limpiar proyectiles al cambiar de sala
+            proyectiles.clear();
         }
 
-        // 7. Verificación de Tienda y Muerte
         if (dungeon.getSalaActual().getTipo() == Room.TipoSala.TIENDA) {
             estadoActual = Estado.TIENDA;
         }
@@ -178,7 +161,6 @@ public class GameLoop extends AnimationTimer {
             estadoActual = Estado.GAME_OVER;
         }
 
-        // 8. Renderizado
         renderer.render(gc, jugador, dungeon.getSalaActual(), proyectiles, ancho, alto);
         hud.render(gc, jugador, dungeon, ancho, alto);
     }
@@ -192,7 +174,9 @@ public class GameLoop extends AnimationTimer {
     }
 
     private void manejarGameOver() {
+        gameOverScreen.actualizarMouse(mouseX, mouseY);                 // ← TUYO
         gameOverScreen.render(gc, ancho, alto);
+
         if (mouseClickX >= 0) {
             if (gameOverScreen.isReiniciarPresionado(mouseClickX, mouseClickY)) {
                 iniciarJuego("carlos");
@@ -201,8 +185,6 @@ public class GameLoop extends AnimationTimer {
             }
         }
     }
-
-    // --- UTILIDADES ---
 
     private void iniciarJuego(String personaje) {
         int colsSala  = (int)(ancho / Room.TILE_SIZE);

@@ -1,78 +1,117 @@
 package edu.trespor2.videojuego.view.screens;
 
+import edu.trespor2.videojuego.model.IdiomaManager;
 import edu.trespor2.videojuego.view.SpriteManager;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.image.Image;
 import javafx.scene.paint.Color;
-import javafx.scene.text.Font;
-import javafx.scene.text.FontWeight;
-import javafx.scene.text.TextAlignment;
 
 /**
- * Pantalla de Game Over.
- * Se muestra cuando jugador.estaMuerto() es true.
+ * GameOverScreen — Pantalla que se muestra cuando el jugador muere.
+ *
+ * SOLID aplicado:
+ *  - SRP : solo se encarga de DIBUJAR la pantalla de game over.
+ *  - OCP : para cambiar el idioma no se modifica esta clase;
+ *           IdiomaManager resuelve la clave del sprite correcto.
+ *  - DIP : depende de la abstracción IdiomaManager, no de strings hardcodeados.
  */
 public class GameOverScreen {
 
     private final SpriteManager sprites;
+    private final IdiomaManager idioma;
 
-    private static final double BTN_REINICIAR_X = 280;
-    private static final double BTN_REINICIAR_Y = 360;
-    private static final double BTN_MENU_X      = 280;
-    private static final double BTN_MENU_Y      = 430;
-    private static final double BTN_ANCHO        = 240;
-    private static final double BTN_ALTO         = 50;
+    // ── Posición del botón YES (Sí / reiniciar) ───────────────────────────
+    // Canvas 800px ancho. Dos botones de 190px con 60px entre ellos = 440px total.
+    // Margen izquierdo: (800 - 440) / 2 = 180  → botón SÍ en X=180, NO en X=430
+    // Y=520 para dejar espacio debajo del texto "¿Jugar de nuevo?"
+    private static final double BTN_YES_X  = 430;
+    private static final double BTN_YES_Y  = 420;
+    private static final double BTN_YES_W  = 190;
+    private static final double BTN_YES_H  = 90;
+
+    // ── Posición del botón NO ─────────────────────────────────────────────
+    private static final double BTN_NO_X   = 630;
+    private static final double BTN_NO_Y   = 420;
+    private static final double BTN_NO_W   = 190;
+    private static final double BTN_NO_H   = 90;
+
+    // ── Efecto hover ──────────────────────────────────────────────────────
+    private double mouseX = 0;
+    private double mouseY = 0;
 
     public GameOverScreen() {
         this.sprites = SpriteManager.getInstance();
+        this.idioma  = IdiomaManager.getInstance();
     }
 
+    /** Llama esto desde el GameLoop para el efecto hover. */
+    public void actualizarMouse(double x, double y) {
+        this.mouseX = x;
+        this.mouseY = y;
+    }
+
+    // ══════════════════════════════════════════════════════════════════════
+    //  RENDER
+    // ══════════════════════════════════════════════════════════════════════
     public void render(GraphicsContext gc, double anchoCanvas, double altoCanvas) {
-        // Fondo
-        Image fondo = sprites.getImagen("gameover_fondo");
-        if (fondo != null) {
-            gc.drawImage(fondo, 0, 0, anchoCanvas, altoCanvas);
+        gc.setImageSmoothing(false);
+
+        // 1) Imagen de fondo con texto "GAME OVER / PERDISTE" según idioma
+        String claveGameOver = idioma.clave("gameover_en", "gameover_es");
+        Image fondoGameOver = sprites.getImagen(claveGameOver);
+
+        if (fondoGameOver != null) {
+            gc.drawImage(fondoGameOver, 0, 0, anchoCanvas, altoCanvas);
         } else {
-            gc.setFill(Color.web("#0d0000"));
+            // Fallback si no cargó la imagen
+            gc.setFill(Color.BLACK);
             gc.fillRect(0, 0, anchoCanvas, altoCanvas);
+            gc.setFill(Color.WHITE);
+            gc.fillText(idioma.esEspanol() ? "PERDISTE" : "GAME OVER",
+                    anchoCanvas / 2 - 100, altoCanvas / 2 - 40);
         }
 
-        gc.setTextAlign(TextAlignment.CENTER);
+        // 2) Botón YES / SÍ
+        String claveYes = idioma.clave("boton_yes", "boton_si");
+        Image imgYes = sprites.getImagen(claveYes);
+        dibujarBoton(gc, imgYes, BTN_YES_X, BTN_YES_Y, BTN_YES_W, BTN_YES_H);
 
-        // Título
-        gc.setFont(Font.font("Arial", FontWeight.BOLD, 64));
-        gc.setFill(Color.RED);
-        gc.fillText("GAME OVER", anchoCanvas / 2, 240);
-
-        gc.setFont(Font.font("Arial", 22));
-        gc.setFill(Color.LIGHTGRAY);
-        gc.fillText("Has sido derrotado...", anchoCanvas / 2, 300);
-
-        // Botones
-        dibujarBoton(gc, "🔄  REINICIAR", BTN_REINICIAR_X, BTN_REINICIAR_Y,
-                BTN_ANCHO, BTN_ALTO, Color.STEELBLUE);
-        dibujarBoton(gc, "🏠  MENÚ PRINCIPAL", BTN_MENU_X, BTN_MENU_Y,
-                BTN_ANCHO, BTN_ALTO, Color.DIMGRAY);
-
-        gc.setTextAlign(TextAlignment.LEFT);
+        // 3) Botón NO (igual en ambos idiomas)
+        Image imgNo = sprites.getImagen("boton_no");
+        dibujarBoton(gc, imgNo, BTN_NO_X, BTN_NO_Y, BTN_NO_W, BTN_NO_H);
     }
 
+    // ══════════════════════════════════════════════════════════════════════
+    //  DETECCIÓN DE CLICS — el GameLoop llama estos métodos
+    // ══════════════════════════════════════════════════════════════════════
+
+    /** Devuelve true si el clic fue sobre el botón de reiniciar (YES/SÍ). */
     public boolean isReiniciarPresionado(double mx, double my) {
-        return mx >= BTN_REINICIAR_X && mx <= BTN_REINICIAR_X + BTN_ANCHO
-                && my >= BTN_REINICIAR_Y && my <= BTN_REINICIAR_Y + BTN_ALTO;
+        return isHover(mx, my, BTN_YES_X, BTN_YES_Y, BTN_YES_W, BTN_YES_H);
     }
 
+    /** Devuelve true si el clic fue sobre el botón de salir al menú (NO). */
     public boolean isMenuPresionado(double mx, double my) {
-        return mx >= BTN_MENU_X && mx <= BTN_MENU_X + BTN_ANCHO
-                && my >= BTN_MENU_Y && my <= BTN_MENU_Y + BTN_ALTO;
+        return isHover(mx, my, BTN_NO_X, BTN_NO_Y, BTN_NO_W, BTN_NO_H);
     }
 
-    private void dibujarBoton(GraphicsContext gc, String texto,
-                              double x, double y, double ancho, double alto, Color color) {
-        gc.setFill(color);
-        gc.fillRoundRect(x, y, ancho, alto, 10, 10);
-        gc.setFill(Color.WHITE);
-        gc.setFont(Font.font("Arial", FontWeight.BOLD, 18));
-        gc.fillText(texto, x + 20, y + 32);
+    // ── Utilidades privadas ───────────────────────────────────────────────
+
+    private void dibujarBoton(GraphicsContext gc, Image img,
+                              double x, double y, double w, double h) {
+        if (img == null) return;
+
+        if (isHover(mouseX, mouseY, x, y, w, h)) {
+            double extra = 6;
+            gc.drawImage(img, x - extra / 2, y - extra / 2,
+                    w + extra, h + extra);
+        } else {
+            gc.drawImage(img, x, y, w, h);
+        }
+    }
+
+    private boolean isHover(double mx, double my,
+                            double x, double y, double w, double h) {
+        return mx >= x && mx <= x + w && my >= y && my <= y + h;
     }
 }
