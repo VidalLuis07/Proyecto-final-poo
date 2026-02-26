@@ -18,6 +18,8 @@ import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.MouseEvent;
+import edu.trespor2.videojuego.model.entidades.personajes.Enemigo;
+import edu.trespor2.videojuego.model.entidades.personajes.Jefe;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -140,6 +142,35 @@ public class GameLoop extends AnimationTimer {
             e.update(delta);
         });
 
+
+        // lista temporal para los zombies que el jefe invoca en su segunda fase
+        List<Enemigo> nuevosEnemigos = new ArrayList<>();
+
+        // 2. Actualizamos los enemigos actuales
+        dungeon.getSalaActual().getEnemigos().forEach(e -> {
+            Enemigo enemigoActual = (Enemigo) e;
+            enemigoActual.perseguir(jugador);
+            enemigoActual.update(delta);
+
+            // REVISIÓN DEL JEFE:
+            if (enemigoActual instanceof Jefe) {
+                Jefe jefe = (Jefe) enemigoActual;
+                // Si el jefe tiene zombies en su "bolsillo" (lista interna)
+                if (!jefe.getZombiesInvocados().isEmpty()) {
+                    // Los pasamos a nuestra lista temporal
+                    nuevosEnemigos.addAll(jefe.getZombiesInvocados());
+                    // Vaciamos la lista del jefe para que no los vuelva a crear en el siguiente frame
+                    jefe.limpiarZombiesInvocados();
+                }
+            }
+        });
+
+        // añadimos los nuevos zombies a la sala
+        if (!nuevosEnemigos.isEmpty()) {
+            dungeon.getSalaActual().getEnemigos().addAll(nuevosEnemigos);
+        }
+
+        // ... (resto del código de proyectiles y render)
         proyectiles.forEach(p -> p.update(delta));
         proyectiles.removeIf(p -> p.getX() < 0 || p.getX() > ancho
                 || p.getY() < 0 || p.getY() > alto);
@@ -157,6 +188,7 @@ public class GameLoop extends AnimationTimer {
 
         renderer.render(gc, jugador, dungeon.getSalaActual(), proyectiles, ancho, alto);
         hud.render(gc, jugador, dungeon, ancho, alto);
+
     }
 
     private void manejarTienda() {
