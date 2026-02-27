@@ -15,7 +15,7 @@ public class SpriteManager {
         return instancia;
     }
 
-    // Enum de dirección (conecta con dx/dy del jugador/enemigo)
+    // ── Enum de dirección (conecta con dx/dy del jugador/enemigo) ──────────
     public enum Direccion {
         FRENTE,     // fila 0 del spritesheet (bajando, mirando al jugador)
         IZQUIERDA,  // fila 1
@@ -23,28 +23,28 @@ public class SpriteManager {
         ATRAS       // fila 3
     }
 
-    // ── Almacén de spritesheets completos
+    // ── Almacén de spritesheets completos ──────────────────────────────────
     private final Map<String, Image> spritesheets = new HashMap<>();
 
-    // Almacén de frames ya recortados (caché para no recortar cada frame)
+    // ── Almacén de frames ya recortados (caché para no recortar cada frame) ─
     // Clave: "nombre_DIRECCION_frameIndex"  Ej: "jugador_FRENTE_0"
     private final Map<String, Image> frameCache = new HashMap<>();
 
-    // Imágenes estáticas (fondos, UI, tiles)
+    // ── Imágenes estáticas (fondos, UI, tiles) ─────────────────────────────
     private final Map<String, Image> imagenesEstaticas = new HashMap<>();
 
     private SpriteManager() {
         cargarTodosLosAssets();
     }
 
-
+    // ══════════════════════════════════════════════════════════════════════
     //  CARGA INICIAL — Se llama una sola vez al arrancar el juego
-
+    // ══════════════════════════════════════════════════════════════════════
     private void cargarTodosLosAssets() {
         System.out.println("Buscando recursos en: " +
                 getClass().getResource("/assets/images/carlosFrente.png"));
 
-        // Personajes jugables (archivos separados por dirección)
+        // ── Personajes jugables (archivos separados por dirección) ─────────
         cargarSpritesheetPorDireccion(
                 "carlos",
                 "/assets/images/carlosFrente.png",
@@ -53,15 +53,7 @@ public class SpriteManager {
                 "/assets/images/carlosDerecha.png",
                 32, 32, 4);
 
-        cargarSpritesheetPorDireccion(
-                "carla",
-                "/assets/images/karlaFrente.png",
-                "/assets/images/karlaDetras.png",
-                "/assets/images/karlaIzquierda.png",
-                "/assets/images/karlaDerecha.png",
-                32, 32, 4);
-
-        // ── Animaciones de ataque con daga
+        // ── Animaciones de ataque con daga ─────────────────────────────────
         // Frente y atrás: cada frame mide 32x40 (3 frames = 96px de ancho)
         // Izquierda y derecha: cada frame mide 40x32 (3 frames = 120px de ancho)
         cargarFilaDespritesheet("carlos_ataque", Direccion.FRENTE,    "/assets/images/carlosDagaFrente.png",    32, 32, 3);
@@ -69,19 +61,38 @@ public class SpriteManager {
         cargarFilaDespritesheet("carlos_ataque", Direccion.IZQUIERDA, "/assets/images/carlosDagaIzquierda.png", 32, 32, 3);
         cargarFilaDespritesheet("carlos_ataque", Direccion.DERECHA,   "/assets/images/carlosDagaDerecha.png",   32, 32, 3);
 
-        // ── Sprite de la daga (proyectil)
+        // ── Sprite de la daga (proyectil) ──────────────────────────────────
         cargarImagen("daga", "/assets/images/daga.png");
 
-        // ── Enemigos (spritesheet único con 4 filas)
+        // ── Enemigos (spritesheet único con 4 filas) ───────────────────────
         cargarSpritesheet("zombie", "/assets/images/chatFrente.png", 40, 40, 4);
         cargarSpritesheet("boss",   "/assets/images/boss.png",   64, 64, 6);
 
         //MENU
         cargarImagen("menu_fondo",   "/assets/images/1.png");
-        cargarImagen("boton_start",  "/assets/images/2.png");
-        cargarImagen("boton_exit",   "/assets/images/3.png");
+        // ── Botones de MENÚ con soporte de idioma ─────────────────────────
+        cargarImagen("boton_start", "/assets/Idioma/start.png");
+        cargarImagen("boton_exit", "/assets/Idioma/exit.png");
 
-        // ── Tiles del mapa
+        // ── Botones de MENÚ con soporte de idioma ─────────────────────────
+        cargarImagen("boton_iniciar", "/assets/Idioma/iniciar.png");  // ES
+        cargarImagen("boton_salir", "/assets/Idioma/salir.png");    // ES
+
+        // ── Botón de cambio de idioma ──────────────────────────────────────
+        // Muestra ESP cuando el juego está en español (para cambiar a inglés)
+        // Muestra ENG cuando el juego está en inglés  (para cambiar a español)
+        cargarImagen("boton_lang_esp", "/assets/Idioma/esp.png");     // se muestra cuando idioma=ES
+        cargarImagen("boton_lang_eng", "/assets/Idioma/eng.png");     // se muestra cuando idioma=EN
+
+        // ── Game Over ──────────────────────────────────────────────────────
+        cargarImagen("gameover_en", "/assets/Idioma/GameOver.png");
+        cargarImagen("gameover_es", "/assets/Idioma/perdiste.png");
+
+        // ── Botones YES / NO / SÍ ─────────────────────────────────────────
+        cargarImagen("boton_yes", "/assets/Idioma/yes.png");
+        cargarImagen("boton_no", "/assets/Idioma/no.png");
+        cargarImagen("boton_si", "/assets/Idioma/si.png");
+        // ── Tiles del mapa ─────────────────────────────────────────────────
         cargarImagen("tile_vacio",  "/assets/sprites/mapa/tile_vacio.png");
         cargarImagen("tile_piso",   "/assets/sprites/mapa/tile_piso.png");
         cargarImagen("tile_pared",  "/assets/sprites/mapa/tile_pared.png");
@@ -90,9 +101,20 @@ public class SpriteManager {
         cargarImagen("corazon_lleno", "/assets/images/corazon.png");
         cargarImagen("corazon_vacio", "/assets/images/corazonVacio.png");
 
-        // Cofres
-        cargarImagen("cofre_cerrado", "/assets/images/Cofre cerradoo.jpeg");
+        // ── Cofres ────────────────────────────────────────────────────────
+        cargarImagen("cofre_cerrado", "/assets/images/Cofre cerradooo.png");
         cargarImagen("cofre_abierto", "/assets/images/Cofre abiertoo.png");
+
+        // ── Moneda ────────────────────────────────────────────────────────
+        cargarImagen("moneda", "/assets/Idioma/monedas.png");
+
+        // ── Powerups (tienda) ─────────────────────────────────────────────
+        cargarImagen("powerup_fuego_mortal",  "/assets/powerups/fuegoMortal.png");
+        cargarImagen("powerup_fuego_veloz",   "/assets/powerups/fuegoVeloz.png");
+        cargarImagen("powerup_fire_velocity", "/assets/powerups/fireVelocity.png");
+        cargarImagen("powerup_mortal_fire",   "/assets/powerups/mortalFire.png");
+        cargarImagen("powerup_lloros",        "/assets/powerups/lloros.png");
+        cargarImagen("powerup_cries",         "/assets/powerups/cries.png");
     }
 
     /**
@@ -140,9 +162,9 @@ public class SpriteManager {
         }
     }
 
-
+    // ══════════════════════════════════════════════════════════════════════
     //  API PÚBLICA — Lo que usan GameRenderer y las Screens
-
+    // ══════════════════════════════════════════════════════════════════════
 
     /**
      * Devuelve un frame específico de animación.
