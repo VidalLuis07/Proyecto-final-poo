@@ -25,7 +25,7 @@ public class Jefe extends Enemigo {
     public void perseguir(Jugador jugador) {
         framesPorFase++;
 
-        if (framesPorFase >= 600) {
+        if (framesPorFase >= 180) {
             if (faseActual == 1) {
                 faseActual = 2;
             } else {
@@ -92,8 +92,6 @@ public class Jefe extends Enemigo {
 
     // --- ATAQUE ---
     public void atacar(Jugador jugador) {
-        if (this.getBounds().intersects(jugador.getBounds())) {
-            jugador.recibirDano(this.ataque);
-        }
+        jugador.recibirDano(this.ataque);
     }
 }
