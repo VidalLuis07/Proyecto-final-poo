@@ -94,7 +94,7 @@ public class Room {
         }
 
         Random random = new Random();
-        int cantidadZombies = 3 + random.nextInt(3);
+        int cantidadZombies = 1;
 
         int minCol = 3;
         int maxCol = columnas - 4;
@@ -148,7 +148,7 @@ public class Room {
                 double velocidad;
 
                 // 20% de probabilidad de ser un zombie grande
-                if (random.nextDouble() < 0.20) {
+                if (random.nextDouble() < 0.04) {
                     tamaño = 64;     // Más grande
                     vida = 50;       // Más vida
                     velocidad = 0.4; // Más lento
