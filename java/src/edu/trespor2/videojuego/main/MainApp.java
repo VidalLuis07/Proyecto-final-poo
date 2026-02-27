@@ -26,7 +26,7 @@ public class MainApp extends Application {
         gameLoop.start();
 
         //Configuramos la ventana
-        stage.setTitle("Dungeon Crawler — POO 2025");
+        stage.setTitle("Castillo's Adventures — POO 2025");
         stage.setScene(scene);
         stage.setResizable(false);
         stage.show();

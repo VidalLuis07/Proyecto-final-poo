@@ -151,10 +151,16 @@ public class GameLoop extends AnimationTimer {
         if (puertaCruzada != null) {
             dungeon.cambiarSala(puertaCruzada, jugador);
             proyectiles.clear();
+
+            if (dungeon.getSalaActual().getTipo() == Room.TipoSala.TIENDA) {
+                dungeon.getSalaActual().setTiendaVisitada(false);
+            }
         }
 
-        if (dungeon.getSalaActual().getTipo() == Room.TipoSala.TIENDA) {
+        if (dungeon.getSalaActual().getTipo() == Room.TipoSala.TIENDA && !dungeon.getSalaActual().isTiendaVisitada()) {
             estadoActual = Estado.TIENDA;
+            // si ya se visito la tienda,no se vuelva a abrir al cerrar el menú
+            dungeon.getSalaActual().setTiendaVisitada(true);
         }
 
         if (jugador.estaMuerto()) {
@@ -185,6 +191,7 @@ public class GameLoop extends AnimationTimer {
             }
         }
     }
+
 
     private void iniciarJuego(String personaje) {
         int colsSala  = (int)(ancho / Room.TILE_SIZE);
