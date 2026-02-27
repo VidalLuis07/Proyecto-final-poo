@@ -20,7 +20,7 @@ public class CollisionManager {
      */
     public void checkCollisions(Jugador jugador, List<Enemigo> enemigos, List<Proyectiles> proyectilesJugador) {
 
-        // 1. Colisión Proyectiles -> Enemigos
+        // Colisión Proyectiles con enemigos Enemigos
         for (int i = 0; i < proyectilesJugador.size(); i++) {
             Proyectiles proyectil = proyectilesJugador.get(i);
 
@@ -37,7 +37,7 @@ public class CollisionManager {
             }
         }
 
-        // 2. Colisión Enemigo -> Jugador (Ataque)
+        // Colisión Enemigo con el Jugador
         for (Enemigo enemigo : enemigos) {
             if (!enemigo.estaMuerto() && enemigo.getBounds().intersects(jugador.getBounds())) {
                 if (enemigo instanceof Zombie) {
@@ -82,7 +82,7 @@ public class CollisionManager {
     }
 
     /**
-     * Lógica para abrir COFRES (del primer código)
+     * Lógica para abrir COFRES
      */
     public void checkCofres(Jugador jugador, List<Chest> cofres) {
         if (cofres == null) return;
@@ -96,7 +96,7 @@ public class CollisionManager {
     }
 
     /**
-     * Lógica para detectar entrada a PUERTAS (del segundo código)
+     * Lógica para detectar entrada a PUERTAS
      */
     public Door verificarColisionPuerta(Jugador jugador, List<Door> puertas) {
         if (puertas == null) return null;
@@ -129,7 +129,7 @@ public class CollisionManager {
         for (int col = colMin; col <= colMax; col++) {
             for (int fila = filaMin; fila <= filaMax; fila++) {
                 if (col < 0 || fila < 0 || col >= tiles.length || fila >= tiles[col].length) {
-                    return true; // Fuera del mapa cuenta como pared
+                    return true;
                 }
                 Tile tile = tiles[col][fila];
                 if (tile != null && !tile.isTransitable()) {

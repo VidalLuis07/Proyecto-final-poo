@@ -20,6 +20,7 @@ public class Room {
     private List<Chest> cofres;
     private List<Coins> monedasEnSuelo;
     private boolean estaLimpia;
+    private boolean tiendaVisitada = false;
 
     private int columnas;
     private int filas;
@@ -121,13 +122,13 @@ public class Room {
 
                 pixelX = offsetX + (randomCol * TILE_SIZE);
                 pixelY = offsetY + (randomFila * TILE_SIZE);
-
+/*
                 double distAlCentro = Math.hypot(pixelX - centroX, pixelY - centroY);
                 if (distAlCentro < distMinimaAlCentro) {
                     intentos++;
                     continue;
                 }
-
+*/
                 boolean muyCercaDeOtro = false;
                 for (Enemigo e : this.enemigos) {
                     double distAEnemigo = Math.hypot(pixelX - e.getX(), pixelY - e.getY());
@@ -151,11 +152,11 @@ public class Room {
                 if (random.nextDouble() < 0.04) {
                     tamaño = 64;     // Más grande
                     vida = 50;       // Más vida
-                    velocidad = 0.4; // Más lento
+                    velocidad = 0.2; // Más lento
                 } else {
                     tamaño = 32;     // Tamaño normal
                     vida = 30;        // Vida normal
-                    velocidad = 0.6; // Velocidad normal
+                    velocidad = 0.4; // Velocidad normal
                 }
 
                 Zombie nuevoZombie = new Zombie(pixelX, pixelY, tamaño, tamaño, velocidad, vida);
@@ -219,6 +220,14 @@ public class Room {
             // Mientras haya enemigos, las puertas se mantienen cerradas
             for (Door puerta : puertas) puerta.cerrar();
         }
+    }
+    //evita que al entrar a la tienda no puedas continuar
+    public boolean isTiendaVisitada() {
+        return tiendaVisitada;
+    }
+
+    public void setTiendaVisitada(boolean tiendaVisitada) {
+        this.tiendaVisitada = tiendaVisitada;
     }
 
     public boolean isEstaLimpia()             { return estaLimpia; }
