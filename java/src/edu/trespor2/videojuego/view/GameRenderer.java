@@ -17,7 +17,7 @@ import java.util.List;
 
 public class GameRenderer {
 
-    // ── Atributos ──────────────────────────────────────────────────────────
+    // ── Atributos
     private final SpriteManager sprites;
 
     private static final int VELOCIDAD_ANIMACION = 8;
@@ -29,14 +29,12 @@ public class GameRenderer {
     private int frameActualJugador = 0;
     private int frameActualEnemigo = 0;
 
-    // ── Constructor ────────────────────────────────────────────────────────
+    // ── Constructor
     public GameRenderer() {
         this.sprites = SpriteManager.getInstance();
     }
 
-    // ══════════════════════════════════════════════════════════════════════
-    //  MÉTODO PRINCIPAL
-    // ══════════════════════════════════════════════════════════════════════
+    //  METODO PRINCIPAL
     public void render(GraphicsContext gc,
                        Jugador jugador,
                        Room salaActual,
@@ -69,9 +67,9 @@ public class GameRenderer {
         dibujarJugador(gc, jugador);
     }
 
-    // ══════════════════════════════════════════════════════════════════════
+
     //  ESCENARIO (Tiles y Fondo)
-    // ══════════════════════════════════════════════════════════════════════
+
     private void dibujarTiles(GraphicsContext gc, Tile[][] tiles,
                               double anchoCanvas, double altoCanvas) {
 
@@ -115,9 +113,9 @@ public class GameRenderer {
         }
     }
 
-    // ══════════════════════════════════════════════════════════════════════
+
     //  PERSONAJES Y ENTIDADES
-    // ══════════════════════════════════════════════════════════════════════
+
     private void dibujarJugador(GraphicsContext gc, Jugador jugador) {
         Direccion dir;
         if (jugador.getDx() != 0 || jugador.getDy() != 0) {
@@ -209,9 +207,9 @@ public class GameRenderer {
         gc.fillRect(x, y - 8, ancho * proporcion, 4);
     }
 
-    // ══════════════════════════════════════════════════════════════════════
+
     //  PUERTAS (Lógica especial para tapar huecos de pared)
-    // ══════════════════════════════════════════════════════════════════════
+
     private void dibujarPuertas(GraphicsContext gc, List<Door> puertas) {
         if (puertas == null) return;
         for (Door puerta : puertas) {

@@ -172,18 +172,21 @@ public class Dungeon {
     private void spawnearEnemigos(Room sala, Random rand) {
         int cantidad = sala.getTipo() == Room.TipoSala.JEFE ? 1 : rand.nextInt(3) + 2;
 
-        int tileInicio = 3;
-        int tileFinCol  = colsSala  - 4;
-        int tileFinFila = filasSala - 4;
+        // Limitamos el área de spawn exclusivamente al 50% central de la sala
+        int tileInicioCol  = colsSala / 4;
+        int tileFinCol     = (colsSala * 3) / 4;
+        int tileInicioFila = filasSala / 4;
+        int tileFinFila    = (filasSala * 3) / 4;
 
         for (int i = 0; i < cantidad; i++) {
-            int col  = tileInicio + rand.nextInt(Math.max(1, tileFinCol  - tileInicio));
-            int fila = tileInicio + rand.nextInt(Math.max(1, tileFinFila - tileInicio));
+            // Se calculan las posiciones lejos de las puertas
+            int col  = tileInicioCol + rand.nextInt(Math.max(1, tileFinCol - tileInicioCol));
+            int fila = tileInicioFila + rand.nextInt(Math.max(1, tileFinFila - tileInicioFila));
 
             double spawnX = Room.getOffsetX() + col  * Room.TILE_SIZE;
             double spawnY = Room.getOffsetY() + fila * Room.TILE_SIZE;
 
-            Zombie z = new Zombie(spawnX, spawnY, 48, 48, 1.5, 30);
+            Zombie z = new Zombie(spawnX, spawnY, 48, 48, 1, 30);
             sala.addEnemigo(z);
         }
     }
