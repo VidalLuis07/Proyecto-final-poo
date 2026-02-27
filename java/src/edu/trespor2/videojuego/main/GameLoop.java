@@ -106,9 +106,10 @@ public class GameLoop extends AnimationTimer {
         creditsScreen.render(gc, ancho, alto);
 
         if (mouseClickX >= 0) {
-            if (creditsScreen.isVolverAJugarPresionado(mouseClickX, mouseClickY)) {
-                // Si el jugador hace clic en el botón de tu imagen, vuelve a jugar
-                iniciarJuego("carlos");
+            if (creditsScreen.isReiniciarPresionado(mouseClickX, mouseClickY, alto)) {
+                iniciarJuego("carlos"); // Reinicia la partida
+            } else if (creditsScreen.isSalirPresionado(mouseClickX, mouseClickY, ancho, alto)) {
+                System.exit(0); // Cierra el juego
             }
         }
     }

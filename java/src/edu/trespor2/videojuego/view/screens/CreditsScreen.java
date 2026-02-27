@@ -4,52 +4,57 @@ import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.image.Image;
 
 public class CreditsScreen {
+    private Image imagenFondo;
+    private Image logoExtra1;
+    private Image logoExtra2;
 
-    private Image imagenCreditos;
-    private double mouseX = 0;
-    private double mouseY = 0;
-
-    public CreditsScreen() {
-        // AQUÍ PONES EL NOMBRE DE TU IMAGEN CHIDA
-        // Asegúrate de que la ruta coincida con donde guardas tus otras imágenes
-        try {
-            imagenCreditos = new Image(getClass().getResourceAsStream("/assets/images/creditos_finales.jpeg"));
-        } catch (Exception e) {
-            System.out.println("No se encontró la imagen de créditos. Verifica la ruta.");
-        }
-    }
+    private double mouseX, mouseY; // Para seguimiento del mouse
 
     public void actualizarMouse(double x, double y) {
         this.mouseX = x;
         this.mouseY = y;
     }
 
+    public CreditsScreen() {
+        try {
+            imagenFondo = new Image(getClass().getResourceAsStream("/assets/images/creditos_finales.jpeg"));
+            // Cargamos las dos imágenes pequeñas
+            logoExtra1 = new Image(getClass().getResourceAsStream("/assets/images/reiniciar.png"));
+            logoExtra2 = new Image(getClass().getResourceAsStream("/assets/images/salir.png"));
+        } catch (Exception e) {
+            System.out.println("Error cargando imágenes de créditos: " + e.getMessage());
+        }
+    }
     public void render(GraphicsContext gc, double ancho, double alto) {
-        // Dibujamos la imagen de fondo ocupando toda la pantalla
-        if (imagenCreditos != null) {
-            gc.drawImage(imagenCreditos, 0, 0, ancho, alto);
-        } else {
-            // Fondo negro por si falla la imagen
-            gc.setFill(javafx.scene.paint.Color.BLACK);
-            gc.fillRect(0, 0, ancho, alto);
-            gc.setFill(javafx.scene.paint.Color.WHITE);
-            gc.fillText("¡VICTORIA! (Falta cargar la imagen)", ancho / 2 - 50, alto / 2);
+        if (imagenFondo != null) gc.drawImage(imagenFondo, 0, 0, ancho, alto);
+
+        double tam = 120;
+        double margen = 40;
+
+        // Dibujamos logoExtra1 (Reiniciar)
+        if (logoExtra1 != null) {
+            gc.drawImage(logoExtra1, margen, alto - tam - margen, tam, tam);
         }
 
-        // Aquí puedes dibujar algún efecto visual si el mouse pasa sobre el botón de volver a jugar
-        // Por ahora lo dejamos limpio para que luzca tu imagen
+        // Dibujamos logoExtra2 (Salir)
+        if (logoExtra2 != null) {
+            gc.drawImage(logoExtra2, ancho - tam - margen, alto - tam - margen, tam, tam);
+        }
     }
 
-    // Estas coordenadas dependen de dónde esté pintado el botón en tu imagen.
-    // Ajústalas (x, y, ancho, alto) para que coincidan con tu diseño gráfico.
-    public boolean isVolverAJugarPresionado(double clickX, double clickY) {
-        // Ejemplo: Un botón que está en el centro inferior de la pantalla
-        double botonX = 1280 / 2.0 - 100; // Asumiendo que tu ancho es 1280
-        double botonY = 600;              // Altura en Y
-        double botonAncho = 200;
-        double botonAlto = 50;
+    // Lógica para botón Reiniciar (Abajo Izquierda)
+    public boolean isReiniciarPresionado(double clickX, double clickY, double alto) {
+        double tam = 120;
+        double margen = 40;
+        return clickX >= margen && clickX <= margen + tam &&
+                clickY >= (alto - tam - margen) && clickY <= (alto - margen);
+    }
 
-        return clickX >= botonX && clickX <= botonX + botonAncho &&
-                clickY >= botonY && clickY <= botonY + botonAlto;
+    // Lógica para botón Salir (Abajo Derecha)
+    public boolean isSalirPresionado(double clickX, double clickY, double ancho, double alto) {
+        double tam = 120;
+        double margen = 40;
+        return clickX >= (ancho - tam - margen) && clickX <= (ancho - margen) &&
+                clickY >= (alto - tam - margen) && clickY <= (alto - margen);
     }
 }
