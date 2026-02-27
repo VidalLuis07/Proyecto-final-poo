@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Random;
 
 import edu.trespor2.videojuego.model.entidades.personajes.Zombie;
+import edu.trespor2.videojuego.model.entidades.personajes.Jefe;
 import edu.trespor2.videojuego.model.entidades.personajes.Jugador;
 
 public class Dungeon {
@@ -186,8 +187,14 @@ public class Dungeon {
             double spawnX = Room.getOffsetX() + col  * Room.TILE_SIZE;
             double spawnY = Room.getOffsetY() + fila * Room.TILE_SIZE;
 
-            Zombie z = new Zombie(spawnX, spawnY, 48, 48, 1, 30);
-            sala.addEnemigo(z);
+            if (sala.getTipo() == Room.TipoSala.JEFE) {
+                Jefe jefe = new Jefe(spawnX, spawnY, 96, 96, 1.5, 150);
+                sala.addEnemigo(jefe);
+                break;
+            } else {
+                Zombie z = new Zombie(spawnX, spawnY, 48, 48, 1, 30);
+                sala.addEnemigo(z);
+            }
         }
     }
 
