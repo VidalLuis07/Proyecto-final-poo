@@ -71,8 +71,8 @@ public class SpriteManager {
         //MENU
         cargarImagen("menu_fondo",   "/assets/images/1.png");
         // ── Botones de MENÚ con soporte de idioma ─────────────────────────
-        cargarImagen("boton_start", "/assets/Idioma/2.png");
-        cargarImagen("boton_exit", "/assets/Idioma/3.png");
+        cargarImagen("boton_start", "/assets/Idioma/start.png");
+        cargarImagen("boton_exit", "/assets/Idioma/exit.png");
 
         // ── Botones de MENÚ con soporte de idioma ─────────────────────────
         cargarImagen("boton_iniciar", "/assets/Idioma/iniciar.png");  // ES
