@@ -4,6 +4,7 @@ import edu.trespor2.videojuego.model.entidades.EntidadMovible;
 import edu.trespor2.videojuego.model.entidades.Proyectiles;
 import edu.trespor2.videojuego.model.entidades.personajes.Enemigo;
 import edu.trespor2.videojuego.model.entidades.personajes.Jugador;
+import edu.trespor2.videojuego.model.entidades.personajes.Jefe;
 import edu.trespor2.videojuego.model.entidades.personajes.Zombie;
 import edu.trespor2.videojuego.model.environment.Room;
 import edu.trespor2.videojuego.model.environment.Tile;
@@ -40,7 +41,9 @@ public class CollisionManager {
         // Colisión Enemigo con el Jugador
         for (Enemigo enemigo : enemigos) {
             if (!enemigo.estaMuerto() && enemigo.getBounds().intersects(jugador.getBounds())) {
-                if (enemigo instanceof Zombie) {
+                if (enemigo instanceof Jefe) {
+                    ((Jefe) enemigo).atacar(jugador);
+                } else if (enemigo instanceof Zombie) {
                     ((Zombie) enemigo).atacar(jugador);
                 }
             }

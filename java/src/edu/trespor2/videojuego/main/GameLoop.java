@@ -146,8 +146,11 @@ public class GameLoop extends AnimationTimer {
             enemigoActual.update(delta);
 
             if (enemigoActual instanceof Jefe jefe) {
-                if (!jefe.getZombiesInvocados().isEmpty()) {
+                // Solo invoca zombies si el jefe sigue vivo
+                if (!jefe.estaMuerto() && !jefe.getZombiesInvocados().isEmpty()) {
                     nuevosEnemigos.addAll(jefe.getZombiesInvocados());
+                    jefe.limpiarZombiesInvocados();
+                } else if (jefe.estaMuerto()) {
                     jefe.limpiarZombiesInvocados();
                 }
             }
@@ -181,7 +184,7 @@ public class GameLoop extends AnimationTimer {
             dungeon.getSalaActual().setTiendaVisitada(true);
         }
 
-        if (dungeon.getSalaActual().getTipo() == Room.TipoSala.JEFE && dungeon.getSalaActual().getEnemigos().isEmpty()) {
+        if (dungeon.getSalaActual().getTipo() == Room.TipoSala.JEFE && dungeon.getSalaActual().isEstaLimpia()) {
             estadoActual = Estado.CREDITOS;
         }
 

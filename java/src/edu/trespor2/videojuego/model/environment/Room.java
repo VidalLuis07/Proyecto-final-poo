@@ -180,6 +180,8 @@ public class Room {
         if(tipo == TipoSala.INICIO || tipo == TipoSala.TIENDA){
             estaLimpia = true;
             this.enemigos.clear(); // Limpieza preventiva para salas seguras
+        } else if (tipo == TipoSala.JEFE) {
+            this.enemigos.clear(); // Limpiar zombies del constructor antes de añadir el Jefe
         }
     }
 
