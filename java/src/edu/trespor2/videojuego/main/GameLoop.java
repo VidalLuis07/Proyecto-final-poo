@@ -13,6 +13,7 @@ import edu.trespor2.videojuego.model.environment.Door;
 import edu.trespor2.videojuego.view.GameRenderer;
 import edu.trespor2.videojuego.view.HUD;
 import edu.trespor2.videojuego.view.SpriteManager;
+import edu.trespor2.videojuego.view.screens.CreditsScreen;
 import edu.trespor2.videojuego.view.screens.GameOverScreen;
 import edu.trespor2.videojuego.view.screens.MenuScreen;
 import edu.trespor2.videojuego.view.screens.ShopScreen;
@@ -28,7 +29,7 @@ import java.util.List;
 
 public class GameLoop extends AnimationTimer {
 
-    public enum Estado { MENU, JUGANDO, TIENDA, GAME_OVER }
+    public enum Estado { MENU, JUGANDO, TIENDA, GAME_OVER, CREDITOS }
     private Estado estadoActual = Estado.MENU;
 
     private final GraphicsContext gc;
@@ -42,6 +43,7 @@ public class GameLoop extends AnimationTimer {
     private final HUD hud;
     private final MenuScreen menuScreen;
     private final GameOverScreen gameOverScreen;
+    private final CreditsScreen creditsScreen;
     private ShopScreen shopScreen;
 
     private Jugador jugador;
@@ -66,6 +68,7 @@ public class GameLoop extends AnimationTimer {
         this.hud              = new HUD();
         this.menuScreen       = new MenuScreen();
         this.gameOverScreen   = new GameOverScreen();
+        this.creditsScreen    = new CreditsScreen();
 
         SpriteManager.getInstance();
 
@@ -90,10 +93,25 @@ public class GameLoop extends AnimationTimer {
             case JUGANDO   -> manejarJuego(delta);
             case TIENDA    -> manejarTienda();
             case GAME_OVER -> manejarGameOver();
+            case CREDITOS  -> manejarCreditos();
         }
 
         mouseClickX = -1;
         mouseClickY = -1;
+    }
+
+
+    private void manejarCreditos() {
+        creditsScreen.actualizarMouse(mouseX, mouseY);
+        creditsScreen.render(gc, ancho, alto);
+
+        if (mouseClickX >= 0) {
+            if (creditsScreen.isReiniciarPresionado(mouseClickX, mouseClickY, alto)) {
+                iniciarJuego("carlos"); // Reinicia la partida
+            } else if (creditsScreen.isSalirPresionado(mouseClickX, mouseClickY, ancho, alto)) {
+                System.exit(0); // Cierra el juego
+            }
+        }
     }
 
     private void manejarMenu() {
@@ -161,6 +179,10 @@ public class GameLoop extends AnimationTimer {
             estadoActual = Estado.TIENDA;
             // si ya se visito la tienda,no se vuelva a abrir al cerrar el menú
             dungeon.getSalaActual().setTiendaVisitada(true);
+        }
+
+        if (dungeon.getSalaActual().getTipo() == Room.TipoSala.JEFE && dungeon.getSalaActual().getEnemigos().isEmpty()) {
+            estadoActual = Estado.CREDITOS;
         }
 
         if (jugador.estaMuerto()) {
