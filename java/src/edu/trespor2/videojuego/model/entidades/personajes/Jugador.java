@@ -8,13 +8,14 @@ public class Jugador extends GameCharacter {
 
     // Estado de ataque
     private boolean atacando = false;
-    private int frameAtaque  = 1;
+    private int frameAtaque = 1;
     private static final int FRAMES_ATAQUE = 5;
     private static final int DURACION_FRAME = 5; // cuántos ticks dura cada frame
     private int contadorAtaque = 0;
     private int cooldownDisparo = 0;
     private static final int MAX_COOLDOWN_DISPARO = 40;
     private int dinero = 0;
+    private int danoBase = 10;
 
     // Última dirección usada
     private double ultimaDirX = 0;
@@ -26,7 +27,9 @@ public class Jugador extends GameCharacter {
         this.nombreSprite = nombreSprite;
     }
 
-    public String getNombreSprite() { return nombreSprite; }
+    public String getNombreSprite() {
+        return nombreSprite;
+    }
 
     // actualizar la direccion
     @Override
@@ -51,6 +54,7 @@ public class Jugador extends GameCharacter {
 
         super.update(delta);
     }
+
     // metodo para saber si el arma esta lista (cooldown)
     public boolean puedeDisparar() {
         return cooldownDisparo <= 0;
@@ -58,27 +62,49 @@ public class Jugador extends GameCharacter {
 
     // lanza una daga en la dirección indicada
     public Proyectiles disparar(double direccionX, double direccionY) {
-        // animación de ataque
         atacando = true;
         frameAtaque = 0;
         contadorAtaque = 0;
         cooldownDisparo = MAX_COOLDOWN_DISPARO;
 
-
-        // Encontrar el centro exacto jugador 96*96 y bala 60*60
         double centroJugadorX = this.x + (this.width / 2);
         double centroJugadorY = this.y + (this.height / 2);
-
-        // centra la bala
         double balaX = centroJugadorX - 30;
         double balaY = centroJugadorY - 30;
 
-        // la bala sale de fuera del cuerpo del jugador
         balaX += direccionX * 40;
         balaY += direccionY * 40;
 
-        // El proyectil lleva 1 de daño y sus respectivos parametros
-        return new Proyectiles(balaX, balaY, 60, 60, 2.5, direccionX, direccionY,  10, true);
+        // se renplaza el daño por daño base para futuras actualizaciones
+        return new Proyectiles(balaX, balaY, 60, 60, 2.5, direccionX, direccionY, danoBase, true);
+    }
+
+    //metodos para la tienda
+    public void restarDinero(int cantidad) {
+        this.dinero -= cantidad;
+    }
+
+    public void aumentarVidaMaxima(int cantidad) {
+        this.vidaMaxima += cantidad;
+        this.vidaActual += cantidad;
+    }
+
+    public void aumentarDano(int cantidad) {
+        this.danoBase += cantidad;
+    }
+    // al igual que enemigo se actualiza la hitbox porque colisionan sin tocarse
+    @Override
+    public javafx.geometry.Rectangle2D getBounds() {
+        // Le quitamos un 30% del tamaño a la caja de colisión
+        double margenX = this.width * 0.20;
+        double margenY = this.height * 0.20;
+
+        return new javafx.geometry.Rectangle2D(
+                this.x + margenX,
+                this.y + margenY,
+                this.width - (margenX * 2),
+                this.height - (margenY * 2)
+        );
     }
 
     public int getDinero() { return dinero; }

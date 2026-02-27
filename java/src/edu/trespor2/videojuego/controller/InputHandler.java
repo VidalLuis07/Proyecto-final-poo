@@ -20,4 +20,6 @@ public class InputHandler {
     public void clearKeys() {
         activeKeys.clear();
     }
+
 }
+
