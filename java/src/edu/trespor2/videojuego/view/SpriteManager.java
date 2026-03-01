@@ -111,11 +111,10 @@ public class SpriteManager {
         // ── Jefe Final ────────────────────────────────────────────────────
         // Solo tenemos sprite de derecha e izquierda.
         // FRENTE y ATRAS usan la imagen de DERECHA como fallback.
-        cargarFilaDespritesheet("jefe", Direccion.DERECHA,   "/assets/idioma/jefeFinalDerecha.png", 64, 64, 1);
-        cargarFilaDespritesheet("jefe", Direccion.IZQUIERDA, "/assets/idioma/jefeFinalLeft.png",    64, 64, 1);
-        cargarFilaDespritesheet("jefe", Direccion.FRENTE,    "/assets/idioma/jefeFinalDerecha.png", 64, 64, 1);
-        cargarFilaDespritesheet("jefe", Direccion.ATRAS,     "/assets/idioma/jefeFinalDerecha.png", 64, 64, 1);
-
+        cargarFilaDespritesheet("jefe", Direccion.DERECHA,   "/assets/Idioma/jefeFinalDerecha.png", 64, 64, 1);
+        cargarFilaDespritesheet("jefe", Direccion.IZQUIERDA, "/assets/Idioma/jefeFinalLeft.png",    64, 64, 1);
+        cargarFilaDespritesheet("jefe", Direccion.FRENTE,    "/assets/Idioma/jefeFinalDerecha.png", 64, 64, 1);
+        cargarFilaDespritesheet("jefe", Direccion.ATRAS,     "/assets/Idioma/jefeFinalDerecha.png", 64, 64, 1);
         // ── Powerups (tienda) ─────────────────────────────────────────────
         //tienda
         cargarImagen("tienda_fondo", "/assets/images/tienda.png");
