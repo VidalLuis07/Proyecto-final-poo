@@ -20,9 +20,10 @@ public class GameRenderer {
     // ── Atributos
     private final SpriteManager sprites;
 
-    private static final int VELOCIDAD_ANIMACION = 8;
-    private static final int FRAMES_JUGADOR = 4;
-    private static final int FRAMES_ENEMIGO = 4;
+    private static final int VELOCIDAD_ANIMACION    = 8;
+    private static final int FRAMES_JUGADOR         = 4; // caminar
+    private static final int FRAMES_JUGADOR_ATAQUE  = 3; // ataque (spritesheet tiene 3 frames)
+    private static final int FRAMES_ENEMIGO         = 4;
     private static final int TILE_SIZE = 32;
 
     private int contadorFrames = 0;
@@ -53,7 +54,8 @@ public class GameRenderer {
         contadorFrames++;
         if (contadorFrames >= VELOCIDAD_ANIMACION) {
             contadorFrames = 0;
-            frameActualJugador = (frameActualJugador + 1) % FRAMES_JUGADOR;
+            int maxFramesJugador = jugador.isAtacando() ? FRAMES_JUGADOR_ATAQUE : FRAMES_JUGADOR;
+            frameActualJugador = (frameActualJugador + 1) % maxFramesJugador;
             frameActualEnemigo = (frameActualEnemigo + 1) % FRAMES_ENEMIGO;
         }
 
@@ -117,28 +119,39 @@ public class GameRenderer {
     //  PERSONAJES Y ENTIDADES
 
     private void dibujarJugador(GraphicsContext gc, Jugador jugador) {
-        Direccion dir;
+        // Actualizar última dirección si el jugador se está moviendo
         if (jugador.getDx() != 0 || jugador.getDy() != 0) {
-            dir = SpriteManager.calcularDireccion(jugador.getDx(), jugador.getDy());
-        } else {
-            dir = SpriteManager.calcularDireccion(jugador.getUltimaDirX(), jugador.getUltimaDirY());
-            if (!jugador.isAtacando()) frameActualJugador = 0;
+            // La dirección se actualiza en Jugador.update(), aquí solo la leemos
         }
+
+        // Siempre usar ultimaDirX/Y — conserva la dirección al atacar o estar quieto
+        Direccion dir = SpriteManager.calcularDireccion(
+                jugador.getUltimaDirX(), jugador.getUltimaDirY());
 
         Image frameToDraw;
         if (jugador.isAtacando()) {
+            // Usar sprite de ataque con el frame que maneja el propio Jugador
             String spriteAtaque = jugador.getNombreSprite() + "_ataque";
             frameToDraw = sprites.getFrame(spriteAtaque, dir, jugador.getFrameAtaque());
-            if (frameToDraw == null) frameToDraw = sprites.getFrame(jugador.getNombreSprite(), dir, 0);
+            if (frameToDraw == null) {
+                // Fallback al sprite normal si no existe el de ataque
+                frameToDraw = sprites.getFrame(jugador.getNombreSprite(), dir, 0);
+            }
         } else {
+            // Si está quieto, frame 0; si camina, animar normalmente
+            if (jugador.getDx() == 0 && jugador.getDy() == 0) {
+                frameActualJugador = 0;
+            }
             frameToDraw = sprites.getFrame(jugador.getNombreSprite(), dir, frameActualJugador);
         }
 
         if (frameToDraw != null) {
-            gc.drawImage(frameToDraw, jugador.getX(), jugador.getY(), jugador.getWidth(), jugador.getHeight());
+            gc.drawImage(frameToDraw, jugador.getX(), jugador.getY(),
+                    jugador.getWidth(), jugador.getHeight());
         } else {
             gc.setFill(Color.CORNFLOWERBLUE);
-            gc.fillRect(jugador.getX(), jugador.getY(), jugador.getWidth(), jugador.getHeight());
+            gc.fillRect(jugador.getX(), jugador.getY(),
+                    jugador.getWidth(), jugador.getHeight());
         }
     }
 
@@ -193,9 +206,16 @@ public class GameRenderer {
     }
 
     private void dibujarMonedas(GraphicsContext gc, List<Coins> monedas) {
-        gc.setFill(Color.GOLD);
         for (Coins moneda : monedas) {
-            gc.fillOval(moneda.getX(), moneda.getY(), moneda.getWidth(), moneda.getHeight());
+            moneda.update(); // avanza la animación
+            Image frame = sprites.getFrameMoneda("moneda", moneda.getFrameActual());
+            if (frame != null) {
+                gc.drawImage(frame, moneda.getX(), moneda.getY(), moneda.getWidth(), moneda.getHeight());
+            } else {
+                // fallback si no cargó el sprite
+                gc.setFill(Color.GOLD);
+                gc.fillOval(moneda.getX(), moneda.getY(), moneda.getWidth(), moneda.getHeight());
+            }
         }
     }
 

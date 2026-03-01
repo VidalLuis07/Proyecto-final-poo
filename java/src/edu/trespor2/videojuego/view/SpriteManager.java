@@ -105,8 +105,8 @@ public class SpriteManager {
         cargarImagen("cofre_cerrado", "/assets/images/Cofre cerradooo.png");
         cargarImagen("cofre_abierto", "/assets/images/Cofre abiertoo.png");
 
-        // Moneda
-        cargarImagen("moneda", "/assets/Idioma/monedas.png");
+        // Moneda — spritesheet horizontal de 10 frames de 498x491 px
+        cargarSpritesheetMoneda("moneda", "/assets/Idioma/monedas.png", 498, 491, 10);
 
         // ── Jefe Final ────────────────────────────────────────────────────
         // Solo tenemos sprite de derecha e izquierda.
@@ -195,6 +195,13 @@ public class SpriteManager {
     }
 
     /**
+     * Devuelve un frame del spritesheet de moneda (sin dirección).
+     */
+    public Image getFrameMoneda(String nombre, int frameIndex) {
+        return frameCache.getOrDefault(nombre + "_" + frameIndex, null);
+    }
+
+    /**
      * Devuelve una imagen estática (fondos, UI).
      */
     public Image getImagen(String nombre) {
@@ -245,6 +252,28 @@ public class SpriteManager {
             System.out.println("[SpriteManager] OK: " + nombre + " " + dir.name());
         } catch (Exception e) {
             System.err.println("[SpriteManager] ERROR: " + ruta + " → " + e.getMessage());
+        }
+    }
+
+    /**
+     * Carga un spritesheet horizontal de 1 sola fila (sin direcciones).
+     * Guarda los frames con clave "nombre_0", "nombre_1", etc.
+     */
+    private void cargarSpritesheetMoneda(String nombre, String ruta,
+                                         int anchoCelda, int altoCelda, int frames) {
+        try {
+            Image sheet = new Image(getClass().getResourceAsStream(ruta));
+            for (int col = 0; col < frames; col++) {
+                WritableImage frame = new WritableImage(
+                        sheet.getPixelReader(),
+                        col * anchoCelda, 0,
+                        anchoCelda, altoCelda
+                );
+                frameCache.put(nombre + "_" + col, frame);
+            }
+            System.out.println("[SpriteManager] OK spritesheet moneda: " + nombre);
+        } catch (Exception e) {
+            System.err.println("[SpriteManager] ERROR moneda: " + ruta + " -> " + e.getMessage());
         }
     }
 }
