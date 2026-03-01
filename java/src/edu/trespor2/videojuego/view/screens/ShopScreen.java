@@ -117,8 +117,8 @@ public class ShopScreen {
             gc.fillRect(x, y, ITEM_SIZE, ITEM_SIZE);
         }
 
-        // mostrar la moneda
-        Image monedaImg = sprites.getImagen("moneda");
+        // mostrar la moneda (frame 0 del spritesheet animado)
+        Image monedaImg = sprites.getFrameMoneda("moneda", 0);
         if (monedaImg != null) {
             gc.drawImage(monedaImg, x + 5, y + ITEM_SIZE + 5, 24, 24);
         }

@@ -2,7 +2,8 @@ package edu.trespor2.videojuego.main;
 
 import edu.trespor2.videojuego.controller.CollisionManager;
 import edu.trespor2.videojuego.controller.InputHandler;
-import edu.trespor2.videojuego.model.IdiomaManager;                        // ← TUYO
+import edu.trespor2.videojuego.model.IdiomaManager;
+import edu.trespor2.videojuego.model.MusicManager;
 import edu.trespor2.videojuego.model.entidades.Proyectiles;
 import edu.trespor2.videojuego.model.entidades.personajes.Jugador;
 import edu.trespor2.videojuego.model.entidades.personajes.Enemigo;
@@ -102,6 +103,7 @@ public class GameLoop extends AnimationTimer {
 
 
     private void manejarCreditos() {
+        MusicManager.getInstance().reproducir(MusicManager.Pista.CREDITOS);
         creditsScreen.actualizarMouse(mouseX, mouseY);
         creditsScreen.render(gc, ancho, alto);
 
@@ -115,6 +117,7 @@ public class GameLoop extends AnimationTimer {
     }
 
     private void manejarMenu() {
+        MusicManager.getInstance().reproducir(MusicManager.Pista.MENU);
         menuScreen.actualizarMouse(mouseX, mouseY);
         menuScreen.render(gc, ancho, alto);
 
@@ -176,6 +179,13 @@ public class GameLoop extends AnimationTimer {
             if (dungeon.getSalaActual().getTipo() == Room.TipoSala.TIENDA) {
                 dungeon.getSalaActual().setTiendaVisitada(false);
             }
+
+            // Cambiar música según el tipo de sala al entrar
+            if (dungeon.getSalaActual().getTipo() == Room.TipoSala.JEFE) {
+                MusicManager.getInstance().reproducir(MusicManager.Pista.JEFE);
+            } else {
+                MusicManager.getInstance().reproducir(MusicManager.Pista.NIVEL);
+            }
         }
 
         if (dungeon.getSalaActual().getTipo() == Room.TipoSala.TIENDA && !dungeon.getSalaActual().isTiendaVisitada()) {
@@ -186,10 +196,12 @@ public class GameLoop extends AnimationTimer {
 
         if (dungeon.getSalaActual().getTipo() == Room.TipoSala.JEFE && dungeon.getSalaActual().isEstaLimpia()) {
             estadoActual = Estado.CREDITOS;
+            MusicManager.getInstance().detener();
         }
 
         if (jugador.estaMuerto()) {
             estadoActual = Estado.GAME_OVER;
+            MusicManager.getInstance().detener();
         }
 
         renderer.render(gc, jugador, dungeon.getSalaActual(), proyectiles, ancho, alto);
@@ -235,6 +247,7 @@ public class GameLoop extends AnimationTimer {
         shopScreen = new ShopScreen(jugador);
 
         estadoActual = Estado.JUGANDO;
+        MusicManager.getInstance().reproducir(MusicManager.Pista.NIVEL);
         System.out.println("¡Juego iniciado con " + personaje + "!");
     }
 

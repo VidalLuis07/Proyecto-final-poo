@@ -34,6 +34,12 @@ public class Jugador extends GameCharacter {
     // actualizar la direccion
     @Override
     public void update(double delta) {
+        // Guardar última dirección de movimiento (solo cuando se mueve)
+        if (dx != 0 || dy != 0) {
+            ultimaDirX = dx;
+            ultimaDirY = dy;
+        }
+
         // Reducir el tiempo de recarga en cada frame
         if (cooldownDisparo > 0) {
             cooldownDisparo--;
@@ -66,6 +72,12 @@ public class Jugador extends GameCharacter {
         frameAtaque = 0;
         contadorAtaque = 0;
         cooldownDisparo = MAX_COOLDOWN_DISPARO;
+
+        // Actualizar dirección visual para que el sprite mire hacia donde dispara
+        if (direccionX != 0 || direccionY != 0) {
+            ultimaDirX = direccionX;
+            ultimaDirY = direccionY;
+        }
 
         double centroJugadorX = this.x + (this.width / 2);
         double centroJugadorY = this.y + (this.height / 2);
