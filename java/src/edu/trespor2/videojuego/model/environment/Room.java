@@ -9,8 +9,16 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
+/**
+ * Representa una sala dentro de la mazmorra.
+ * Contiene tiles, enemigos, puertas, cofres y monedas.
+ * También gestiona su estado (limpia o con enemigos activos).
+ */
 public class Room {
 
+    /**
+     * Tipos posibles de sala dentro del juego.
+     */
     public enum TipoSala { INICIO, NORMAL, TIENDA, JEFE }
 
     private TipoSala tipo;
@@ -25,11 +33,20 @@ public class Room {
     private int columnas;
     private int filas;
 
+    /**
+     * Tamaño en píxeles de cada tile.
+     */
     public static final int TILE_SIZE = 32;
 
     private static double offsetX = 0;
     private static double offsetY = 0;
 
+    /**
+     * Constructor de la sala.
+     *
+     * @param columnas Número de columnas en tiles.
+     * @param filas Número de filas en tiles.
+     */
     public Room(int columnas, int filas) {
         this.columnas   = columnas;
         this.filas      = filas;
@@ -45,6 +62,14 @@ public class Room {
         generarEnemigos();
     }
 
+    /**
+     * Inicializa el offset para centrar la sala en el canvas.
+     *
+     * @param anchoCanvas Ancho del canvas.
+     * @param altoCanvas Alto del canvas.
+     * @param columnasRoom Columnas de la sala.
+     * @param filasRoom Filas de la sala.
+     */
     public static void inicializarOffset(double anchoCanvas, double altoCanvas,
                                          int columnasRoom, int filasRoom) {
         double salaAnchoPx = columnasRoom * TILE_SIZE;
@@ -53,9 +78,20 @@ public class Room {
         offsetY = (altoCanvas  - salaAltoPx)  / 2.0;
     }
 
+    /**
+     * @return Offset horizontal de renderizado.
+     */
     public static double getOffsetX() { return offsetX; }
+
+    /**
+     * @return Offset vertical de renderizado.
+     */
     public static double getOffsetY() { return offsetY; }
 
+    /**
+     * Genera la estructura base de tiles de la sala
+     * (bordes vacíos, paredes y piso transitable).
+     */
     private void generarTiles(int columnas, int filas) {
         for (int col = 0; col < columnas; col++) {
             for (int fila = 0; fila < filas; fila++) {
@@ -87,6 +123,10 @@ public class Room {
         }
     }
 
+    /**
+     * Genera enemigos dentro de la sala si corresponde.
+     * No genera enemigos en salas de INICIO o TIENDA.
+     */
     private void generarEnemigos() {
         if (this.tipo == TipoSala.INICIO || this.tipo == TipoSala.TIENDA) {
             this.estaLimpia = true;
@@ -104,96 +144,54 @@ public class Room {
 
         if (maxCol < minCol || maxFila < minFila) return;
 
-        // Lógica de espaciado (del segundo código)
-        double distMinimaEntreEnemigos = 100.0;
-        double distMinimaAlCentro = 150.0;
-        double centroX = getCentroX();
-        double centroY = getCentroY();
-
         for (int i = 0; i < cantidadZombies; i++) {
-            double pixelX = 0;
-            double pixelY = 0;
-            boolean posicionValida = false;
-            int intentos = 0;
 
-            while (!posicionValida && intentos < 20) {
-                int randomCol = minCol + random.nextInt((maxCol - minCol) + 1);
-                int randomFila = minFila + random.nextInt((maxFila - minFila) + 1);
+            int randomCol = minCol + random.nextInt((maxCol - minCol) + 1);
+            int randomFila = minFila + random.nextInt((maxFila - minFila) + 1);
 
-                pixelX = offsetX + (randomCol * TILE_SIZE);
-                pixelY = offsetY + (randomFila * TILE_SIZE);
-/*
-                double distAlCentro = Math.hypot(pixelX - centroX, pixelY - centroY);
-                if (distAlCentro < distMinimaAlCentro) {
-                    intentos++;
-                    continue;
-                }
-*/
-                boolean muyCercaDeOtro = false;
-                for (Enemigo e : this.enemigos) {
-                    double distAEnemigo = Math.hypot(pixelX - e.getX(), pixelY - e.getY());
-                    if (distAEnemigo < distMinimaEntreEnemigos) {
-                        muyCercaDeOtro = true;
-                        break;
-                    }
-                }
+            double pixelX = offsetX + (randomCol * TILE_SIZE);
+            double pixelY = offsetY + (randomFila * TILE_SIZE);
 
-                if (muyCercaDeOtro) intentos++;
-                else posicionValida = true;
+            double tamaño;
+            int vida;
+            double velocidad;
+
+            if (random.nextDouble() < 0.04) {
+                tamaño = 64;
+                vida = 50;
+                velocidad = 0.2;
+            } else {
+                tamaño = 32;
+                vida = 30;
+                velocidad = 0.4;
             }
 
-            // NUEVA LÓGICA DE TAMAÑOS Y STATS
-            if (posicionValida) {
-                double tamaño;
-                int vida;
-                double velocidad;
-
-                // 20% de probabilidad de ser un zombie grande
-                if (random.nextDouble() < 0.04) {
-                    tamaño = 64;     // Más grande
-                    vida = 50;       // Más vida
-                    velocidad = 0.2; // Más lento
-                } else {
-                    tamaño = 32;     // Tamaño normal
-                    vida = 30;        // Vida normal
-                    velocidad = 0.4; // Velocidad normal
-                }
-
-                Zombie nuevoZombie = new Zombie(pixelX, pixelY, tamaño, tamaño, velocidad, vida);
-                this.addEnemigo(nuevoZombie);
-            }
+            Zombie nuevoZombie = new Zombie(pixelX, pixelY, tamaño, tamaño, velocidad, vida);
+            this.addEnemigo(nuevoZombie);
         }
     }
 
+    /**
+     * @return Coordenada X del centro de la sala.
+     */
     public double getCentroX() {
         return offsetX + (columnas / 2.0) * TILE_SIZE;
     }
 
+    /**
+     * @return Coordenada Y del centro de la sala.
+     */
     public double getCentroY() {
         return offsetY + (filas / 2.0) * TILE_SIZE;
     }
 
-    public TipoSala getTipo() { return tipo; }
-
-    public void setTipo(TipoSala tipo) {
-        this.tipo = tipo;
-        if(tipo == TipoSala.INICIO || tipo == TipoSala.TIENDA){
-            estaLimpia = true;
-            this.enemigos.clear(); // Limpieza preventiva para salas seguras
-        } else if (tipo == TipoSala.JEFE) {
-            this.enemigos.clear(); // Limpiar zombies del constructor antes de añadir el Jefe
-        }
-    }
-
-    public void addPuerta(Door puerta)   { puertas.add(puerta); }
-    public void addEnemigo(Enemigo e)    { enemigos.add(e); }
-    public void addCofre(Chest cofre)    { cofres.add(cofre); }
-    public void addMoneda(Coins moneda)  { monedasEnSuelo.add(moneda); }
-
-    public void setTile(int x, int y, Tile tile) { mapaTiles[x][y] = tile; }
-
+    /**
+     * Actualiza el estado de la sala.
+     * Abre puertas si todos los enemigos han sido derrotados.
+     * Genera un cofre de recompensa al limpiarse.
+     */
     public void actualizarEstadoSala() {
-        // Si es sala segura, las puertas siempre se abren
+
         if (tipo == TipoSala.INICIO || tipo == TipoSala.TIENDA) {
             estaLimpia = true;
             for (Door d : puertas) d.abrir();
@@ -214,28 +212,66 @@ public class Room {
             estaLimpia = true;
             for (Door puerta : puertas) puerta.abrir();
 
-            // Generar cofre de premio (del segundo código)
             Chest cofrePremio = new Chest(getCentroX() - 16, getCentroY() - 16);
             addCofre(cofrePremio);
-            System.out.println("¡Sala limpia! Aparece un cofre.");
+
         } else {
-            // Mientras haya enemigos, las puertas se mantienen cerradas
             for (Door puerta : puertas) puerta.cerrar();
         }
     }
-    //evita que al entrar a la tienda no puedas continuar
-    public boolean isTiendaVisitada() {
-        return tiendaVisitada;
+
+    /** @return Tipo de la sala. */
+    public TipoSala getTipo() { return tipo; }
+
+    /** @param tipo Nuevo tipo de sala. */
+    public void setTipo(TipoSala tipo) {
+        this.tipo = tipo;
+        if(tipo == TipoSala.INICIO || tipo == TipoSala.TIENDA){
+            estaLimpia = true;
+            this.enemigos.clear();
+        } else if (tipo == TipoSala.JEFE) {
+            this.enemigos.clear();
+        }
     }
 
+    /** @return Indica si la tienda ya fue visitada. */
+    public boolean isTiendaVisitada() { return tiendaVisitada; }
+
+    /** @param tiendaVisitada Marca si la tienda fue visitada. */
     public void setTiendaVisitada(boolean tiendaVisitada) {
         this.tiendaVisitada = tiendaVisitada;
     }
 
-    public boolean isEstaLimpia()             { return estaLimpia; }
-    public List<Door> getPuertas()            { return puertas; }
-    public List<Enemigo> getEnemigos()        { return enemigos; }
-    public List<Chest> getCofres()            { return cofres; }
-    public List<Coins> getMonedasEnSuelo()    { return monedasEnSuelo; }
-    public Tile[][] getMapaTiles()            { return mapaTiles; }
+    /** @return Indica si la sala está limpia. */
+    public boolean isEstaLimpia() { return estaLimpia; }
+
+    /** @return Lista de puertas de la sala. */
+    public List<Door> getPuertas() { return puertas; }
+
+    /** @return Lista de enemigos presentes. */
+    public List<Enemigo> getEnemigos() { return enemigos; }
+
+    /** @return Lista de cofres en la sala. */
+    public List<Chest> getCofres() { return cofres; }
+
+    /** @return Lista de monedas en el suelo. */
+    public List<Coins> getMonedasEnSuelo() { return monedasEnSuelo; }
+
+    /** @return Matriz de tiles de la sala. */
+    public Tile[][] getMapaTiles() { return mapaTiles; }
+
+    /** Agrega una puerta a la sala. */
+    public void addPuerta(Door puerta) { puertas.add(puerta); }
+
+    /** Agrega un enemigo a la sala. */
+    public void addEnemigo(Enemigo e) { enemigos.add(e); }
+
+    /** Agrega un cofre a la sala. */
+    public void addCofre(Chest cofre) { cofres.add(cofre); }
+
+    /** Agrega una moneda al suelo. */
+    public void addMoneda(Coins moneda) { monedasEnSuelo.add(moneda); }
+
+    /** Modifica un tile específico del mapa. */
+    public void setTile(int x, int y, Tile tile) { mapaTiles[x][y] = tile; }
 }

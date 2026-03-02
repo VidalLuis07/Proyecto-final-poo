@@ -4,26 +4,56 @@ import edu.trespor2.videojuego.model.entidades.personajes.Jugador;
 import edu.trespor2.videojuego.model.environment.Dungeon;
 import edu.trespor2.videojuego.model.environment.Room;
 import javafx.scene.canvas.GraphicsContext;
-import javafx.scene.image.Image;          // ← este
-import javafx.scene.paint.Color;          // ← este
+import javafx.scene.image.Image;
+import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 
+/**
+ * Se encarga de renderizar la interfaz gráfica superpuesta (HUD).
+ *
+ * Muestra información del jugador como:
+ * - Vida (corazones)
+ * - Monedas
+ * - Minimapa del dungeon
+ *
+ * Debe renderizarse después del GameRenderer para que aparezca
+ * por encima del escenario y las entidades.
+ */
 public class HUD {
 
+    /** Margen general desde los bordes del canvas. */
     private static final int MARGEN = 12;
-    private static final int TAMANO_CELDA_MAPA = 8; // px por sala en el minimapa
+
+    /** Tamaño en píxeles de cada sala en el minimapa. */
+    private static final int TAMANO_CELDA_MAPA = 8;
+
+    /** Gestor centralizado de sprites. */
     private final SpriteManager sprites;
+
+    /**
+     * Constructor del HUD.
+     * Inicializa el gestor de sprites.
+     */
     public HUD() {
-        this.sprites = SpriteManager.getInstance(); // ← agregar esto
+        this.sprites = SpriteManager.getInstance();
     }
 
     /**
-     * Dibuja todo el HUD.
-     * Llamar después de GameRenderer.render() para que aparezca encima.
+     * Método principal de renderizado del HUD.
+     *
+     * @param gc Contexto gráfico.
+     * @param jugador Jugador actual.
+     * @param dungeon Dungeon actual.
+     * @param anchoCanvas Ancho del canvas.
+     * @param altoCanvas Alto del canvas.
      */
-    public void render(GraphicsContext gc, Jugador jugador, Dungeon dungeon,
-                       double anchoCanvas, double altoCanvas) {
+    public void render(GraphicsContext gc,
+                       Jugador jugador,
+                       Dungeon dungeon,
+                       double anchoCanvas,
+                       double altoCanvas) {
+
         if (jugador == null) return;
 
         dibujarVida(gc, jugador);
@@ -31,18 +61,26 @@ public class HUD {
         dibujarMiniMapa(gc, dungeon, anchoCanvas, altoCanvas);
     }
 
-    //  VIDA — Corazones en la esquina superior izquierda
+    /**
+     * Dibuja los corazones de vida del jugador
+     * en la esquina superior izquierda.
+     *
+     * @param gc Contexto gráfico.
+     * @param jugador Jugador actual.
+     */
     private void dibujarVida(GraphicsContext gc, Jugador jugador) {
+
         int vidaActual = jugador.getVidaActual();
         int vidaMaxima = jugador.getVidaMaxima();
 
         Image corazonLleno = sprites.getImagen("corazon_lleno");
         Image corazonVacio = sprites.getImagen("corazon_vacio");
 
-        int CORAZON_SIZE = 55; // tamaño en pantalla, ajusta al gusto
-        int SEPARACION   =-5;  // espacio entre corazones
+        int CORAZON_SIZE = 55;
+        int SEPARACION = -5;
 
         for (int i = 0; i < vidaMaxima; i++) {
+
             double x = MARGEN + i * (CORAZON_SIZE + SEPARACION);
             double y = MARGEN;
 
@@ -52,16 +90,21 @@ public class HUD {
                 gc.setImageSmoothing(false);
                 gc.drawImage(imgAUsar, x, y, CORAZON_SIZE, CORAZON_SIZE);
             } else {
-                // Fallback por si no carga la imagen
                 gc.setFill(i < vidaActual ? Color.CRIMSON : Color.DARKGRAY);
                 gc.fillOval(x, y, CORAZON_SIZE, CORAZON_SIZE);
             }
         }
     }
 
-    //  MONEDAS — Esquina superior derecha (cuando Jugador tenga getDinero())
-
+    /**
+     * Dibuja la cantidad de monedas del jugador
+     * en la esquina superior derecha.
+     *
+     * @param gc Contexto gráfico.
+     * @param jugador Jugador actual.
+     */
     private void dibujarMonedas(GraphicsContext gc, Jugador jugador) {
+
         int monedas = jugador.getDinero();
 
         gc.setFont(Font.font("Arial", FontWeight.BOLD, 20));
@@ -69,11 +112,20 @@ public class HUD {
         gc.fillText("💰 " + monedas, 20, 80);
     }
 
+    /**
+     * Dibuja el minimapa del dungeon en la esquina superior derecha.
+     * Cada sala se representa como una celda coloreada según su tipo.
+     *
+     * @param gc Contexto gráfico.
+     * @param dungeon Dungeon actual.
+     * @param anchoCanvas Ancho del canvas.
+     * @param altoCanvas Alto del canvas.
+     */
+    private void dibujarMiniMapa(GraphicsContext gc,
+                                 Dungeon dungeon,
+                                 double anchoCanvas,
+                                 double altoCanvas) {
 
-    //  MINIMAPA — Esquina superior derecha
-
-    private void dibujarMiniMapa(GraphicsContext gc, Dungeon dungeon,
-                                 double anchoCanvas, double altoCanvas) {
         if (dungeon == null) return;
 
         Room[][] grid = dungeon.getGridSalas();
@@ -82,9 +134,9 @@ public class HUD {
         int cols = grid.length;
         int filas = grid[0].length;
 
-        // Posición del minimapa: esquina superior derecha
-        double mapaAncho = cols * TAMANO_CELDA_MAPA + (cols - 1); // incluye gaps
+        double mapaAncho = cols * TAMANO_CELDA_MAPA + (cols - 1);
         double mapaAlto  = filas * TAMANO_CELDA_MAPA + (filas - 1);
+
         double mapaX = anchoCanvas - mapaAncho - MARGEN;
         double mapaY = MARGEN;
 
@@ -94,23 +146,24 @@ public class HUD {
 
         for (int col = 0; col < cols; col++) {
             for (int fila = 0; fila < filas; fila++) {
+
                 Room sala = grid[col][fila];
                 if (sala == null) continue;
 
                 double celdaX = mapaX + col * (TAMANO_CELDA_MAPA + 1);
                 double celdaY = mapaY + fila * (TAMANO_CELDA_MAPA + 1);
 
-                // Color según tipo de sala
                 if (sala == salaActual) {
-                    gc.setFill(Color.WHITE);        // Sala donde está el jugador
+                    gc.setFill(Color.WHITE);
                 } else {
                     switch (sala.getTipo()) {
-                        case INICIO   -> gc.setFill(Color.LIMEGREEN);
-                        case JEFE     -> gc.setFill(Color.CRIMSON);
-                        case TIENDA   -> gc.setFill(Color.GOLD);
-                        default       -> gc.setFill(Color.SLATEGRAY);
+                        case INICIO -> gc.setFill(Color.LIMEGREEN);
+                        case JEFE   -> gc.setFill(Color.CRIMSON);
+                        case TIENDA -> gc.setFill(Color.GOLD);
+                        default     -> gc.setFill(Color.SLATEGRAY);
                     }
                 }
+
                 gc.fillRect(celdaX, celdaY, TAMANO_CELDA_MAPA, TAMANO_CELDA_MAPA);
             }
         }
