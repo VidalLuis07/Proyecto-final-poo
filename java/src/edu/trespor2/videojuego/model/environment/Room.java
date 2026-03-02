@@ -30,6 +30,14 @@ public class Room {
     private static double offsetX = 0;
     private static double offsetY = 0;
 
+    /**
+     * Construye una sala con el número de columnas y filas de tiles dados.
+     * Inicializa las listas de puertas, enemigos, cofres y monedas,
+     * genera los tiles y spawea enemigos según el tipo de sala.
+     *
+     * @param columnas número de columnas de tiles de la sala
+     * @param filas    número de filas de tiles de la sala
+     */
     public Room(int columnas, int filas) {
         this.columnas   = columnas;
         this.filas      = filas;
@@ -45,6 +53,15 @@ public class Room {
         generarEnemigos();
     }
 
+    /**
+     * Calcula y almacena el desplazamiento (offset) necesario para centrar
+     * la sala en el canvas. Debe llamarse una vez antes de crear salas.
+     *
+     * @param anchoCanvas   ancho del canvas en píxeles
+     * @param altoCanvas    alto del canvas en píxeles
+     * @param columnasRoom  número de columnas de tiles de la sala
+     * @param filasRoom     número de filas de tiles de la sala
+     */
     public static void inicializarOffset(double anchoCanvas, double altoCanvas,
                                          int columnasRoom, int filasRoom) {
         double salaAnchoPx = columnasRoom * TILE_SIZE;
@@ -53,9 +70,28 @@ public class Room {
         offsetY = (altoCanvas  - salaAltoPx)  / 2.0;
     }
 
+    /**
+     * Retorna el desplazamiento horizontal para centrar la sala en el canvas.
+     *
+     * @return offset en el eje X en píxeles
+     */
     public static double getOffsetX() { return offsetX; }
+
+    /**
+     * Retorna el desplazamiento vertical para centrar la sala en el canvas.
+     *
+     * @return offset en el eje Y en píxeles
+     */
     public static double getOffsetY() { return offsetY; }
 
+    /**
+     * Genera la matriz de tiles de la sala.
+     * Los 2 tiles del borde exterior son VACÍO, el siguiente anillo es PARED,
+     * y el resto es PISO transitable.
+     *
+     * @param columnas número de columnas de tiles
+     * @param filas    número de filas de tiles
+     */
     private void generarTiles(int columnas, int filas) {
         for (int col = 0; col < columnas; col++) {
             for (int fila = 0; fila < filas; fila++) {
@@ -87,6 +123,12 @@ public class Room {
         }
     }
 
+    /**
+     * Genera enemigos iniciales en la sala según su tipo.
+     * En salas INICIO o TIENDA no se generan enemigos y la sala se marca como limpia.
+     * En el resto se intenta colocar zombies en posiciones válidas con un mínimo
+     * de separación entre ellos. Hay un 4% de probabilidad de generar un zombie grande.
+     */
     private void generarEnemigos() {
         if (this.tipo == TipoSala.INICIO || this.tipo == TipoSala.TIENDA) {
             this.estaLimpia = true;
@@ -165,16 +207,38 @@ public class Room {
         }
     }
 
+    /**
+     * Retorna la coordenada X del centro de la sala en píxeles.
+     *
+     * @return posición X central de la sala
+     */
     public double getCentroX() {
         return offsetX + (columnas / 2.0) * TILE_SIZE;
     }
 
+    /**
+     * Retorna la coordenada Y del centro de la sala en píxeles.
+     *
+     * @return posición Y central de la sala
+     */
     public double getCentroY() {
         return offsetY + (filas / 2.0) * TILE_SIZE;
     }
 
+    /**
+     * Retorna el tipo actual de la sala.
+     *
+     * @return tipo de sala ({@code INICIO}, {@code NORMAL}, {@code TIENDA} o {@code JEFE})
+     */
     public TipoSala getTipo() { return tipo; }
 
+    /**
+     * Establece el tipo de la sala y aplica la lógica correspondiente.
+     * Las salas INICIO y TIENDA se marcan como limpias y se eliminan sus enemigos.
+     * Las salas JEFE limpian los zombies generados por el constructor.
+     *
+     * @param tipo nuevo tipo de sala
+     */
     public void setTipo(TipoSala tipo) {
         this.tipo = tipo;
         if(tipo == TipoSala.INICIO || tipo == TipoSala.TIENDA){
@@ -185,13 +249,50 @@ public class Room {
         }
     }
 
+    /**
+     * Agrega una puerta a la sala.
+     *
+     * @param puerta la {@code Door} a agregar
+     */
     public void addPuerta(Door puerta)   { puertas.add(puerta); }
+
+    /**
+     * Agrega un enemigo a la sala.
+     *
+     * @param e el {@code Enemigo} a agregar
+     */
     public void addEnemigo(Enemigo e)    { enemigos.add(e); }
+
+    /**
+     * Agrega un cofre a la sala.
+     *
+     * @param cofre el {@code Chest} a agregar
+     */
     public void addCofre(Chest cofre)    { cofres.add(cofre); }
+
+    /**
+     * Agrega una moneda al suelo de la sala.
+     *
+     * @param moneda la {@code Coins} a agregar
+     */
     public void addMoneda(Coins moneda)  { monedasEnSuelo.add(moneda); }
 
+    /**
+     * Reemplaza el tile en la posición dada del mapa.
+     *
+     * @param x    columna del tile a reemplazar
+     * @param y    fila del tile a reemplazar
+     * @param tile nuevo {@code Tile} a colocar
+     */
     public void setTile(int x, int y, Tile tile) { mapaTiles[x][y] = tile; }
 
+    /**
+     * Evalúa si la sala ha sido limpiada de enemigos y actúa en consecuencia.
+     * En salas seguras (INICIO, TIENDA) las puertas siempre permanecen abiertas.
+     * En el resto, si todos los enemigos están muertos, marca la sala como limpia,
+     * abre las puertas y genera un cofre de premio en el centro. Si quedan enemigos,
+     * mantiene las puertas cerradas.
+     */
     public void actualizarEstadoSala() {
         // Si es sala segura, las puertas siempre se abren
         if (tipo == TipoSala.INICIO || tipo == TipoSala.TIENDA) {
@@ -223,19 +324,66 @@ public class Room {
             for (Door puerta : puertas) puerta.cerrar();
         }
     }
+
+    /**
+     * Indica si la tienda de esta sala ya fue visitada en la sesión actual.
+     * Evita que la pantalla de tienda se vuelva a abrir al regresar a la sala.
+     *
+     * @return {@code true} si la tienda ya fue visitada; {@code false} en caso contrario
+     */
     //evita que al entrar a la tienda no puedas continuar
     public boolean isTiendaVisitada() {
         return tiendaVisitada;
     }
 
+    /**
+     * Establece si la tienda de esta sala ha sido visitada.
+     *
+     * @param tiendaVisitada {@code true} para marcarla como visitada; {@code false} para resetearla
+     */
     public void setTiendaVisitada(boolean tiendaVisitada) {
         this.tiendaVisitada = tiendaVisitada;
     }
 
+    /**
+     * Indica si la sala está limpia (sin enemigos vivos).
+     *
+     * @return {@code true} si la sala está limpia; {@code false} en caso contrario
+     */
     public boolean isEstaLimpia()             { return estaLimpia; }
+
+    /**
+     * Retorna la lista de puertas de la sala.
+     *
+     * @return lista de {@code Door}
+     */
     public List<Door> getPuertas()            { return puertas; }
+
+    /**
+     * Retorna la lista de enemigos presentes en la sala.
+     *
+     * @return lista de {@code Enemigo}
+     */
     public List<Enemigo> getEnemigos()        { return enemigos; }
+
+    /**
+     * Retorna la lista de cofres presentes en la sala.
+     *
+     * @return lista de {@code Chest}
+     */
     public List<Chest> getCofres()            { return cofres; }
+
+    /**
+     * Retorna la lista de monedas en el suelo de la sala.
+     *
+     * @return lista de {@code Coins}
+     */
     public List<Coins> getMonedasEnSuelo()    { return monedasEnSuelo; }
+
+    /**
+     * Retorna la matriz de tiles que componen el mapa de la sala.
+     *
+     * @return matriz de {@code Tile} de dimensiones [columnas][filas]
+     */
     public Tile[][] getMapaTiles()            { return mapaTiles; }
 }

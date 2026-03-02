@@ -11,6 +11,17 @@ public class Jefe extends Enemigo {
 
     private List<Zombie> zombiesInvocados;
 
+    /**
+     * Construye un jefe con las dimensiones y estadísticas dadas.
+     * El jefe inicia en la fase 1 con un ataque de 2 puntos de daño.
+     *
+     * @param x          posición inicial en el eje X
+     * @param y          posición inicial en el eje Y
+     * @param width      ancho del jefe en píxeles
+     * @param height     alto del jefe en píxeles
+     * @param velocidad  velocidad de movimiento del jefe
+     * @param vidaMaxima cantidad máxima de vida del jefe
+     */
     public Jefe(double x, double y, double width, double height, double velocidad, int vidaMaxima) {
         super(x, y, width, height, velocidad, vidaMaxima);
 
@@ -21,6 +32,16 @@ public class Jefe extends Enemigo {
         this.zombiesInvocados = new ArrayList<>();
     }
 
+    /**
+     * Define el comportamiento del jefe en cada frame.
+     * Alterna entre dos fases cada 180 frames:
+     * <ul>
+     *   <li><b>Fase 1:</b> persigue al jugador para atacar cuerpo a cuerpo.</li>
+     *   <li><b>Fase 2:</b> se detiene e invoca una horda de zombies al inicio de la fase.</li>
+     * </ul>
+     *
+     * @param jugador el jugador al que el jefe persigue o reacciona
+     */
     @Override
     public void perseguir(Jugador jugador) {
         framesPorFase++;
@@ -64,14 +85,16 @@ public class Jefe extends Enemigo {
         }
     }
 
-
+    /**
+     * Invoca una horda de 3 zombies alrededor de la posición actual del jefe.
+     * Los zombies aparecen a los lados y debajo del jefe con estadísticas estándar.
+     */
     private void invocarZombiesHorda() {
         // 3 zombies que aparecen alrededor  del jefe
         // Caractisticas normales: 32x32 tamaño, 0.6 vel, 5 vida
         Zombie z1 = new Zombie(this.x + 40, this.y, 32, 32, 0.6, 5);
         Zombie z2 = new Zombie(this.x - 40, this.y, 32, 32, 0.6, 5);
         Zombie z3 = new Zombie(this.x, this.y + 40, 32, 32, 0.6, 5);
-
 
         zombiesInvocados.add(z1);
         zombiesInvocados.add(z2);
@@ -80,17 +103,33 @@ public class Jefe extends Enemigo {
 
     // --- MÉTODOS PARA CONECTAR CON LA SALA/GAMELOOP ---
 
+    /**
+     * Retorna la lista de zombies invocados por el jefe que aún no han sido
+     * transferidos a la sala.
+     *
+     * @return lista de {@code Zombie} invocados pendientes de agregar a la sala
+     */
     // La sala usará esto para ver si el jefe invocó algo nuevo
     public List<Zombie> getZombiesInvocados() {
         return zombiesInvocados;
     }
 
+    /**
+     * Vacía la lista de zombies invocados del jefe.
+     * Debe llamarse después de que la sala haya recogido los zombies para evitar duplicados.
+     */
     // La sala usará esto después de sacar a los zombies, para vaciarle los bolsillos al jefe
     public void limpiarZombiesInvocados() {
         zombiesInvocados.clear();
     }
 
     // --- ATAQUE ---
+
+    /**
+     * Aplica daño al jugador igual al valor de ataque del jefe.
+     *
+     * @param jugador el jugador que recibirá el daño
+     */
     public void atacar(Jugador jugador) {
         jugador.recibirDano(this.ataque);
     }
