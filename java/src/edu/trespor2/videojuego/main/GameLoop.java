@@ -58,6 +58,13 @@ public class GameLoop extends AnimationTimer {
     private double mouseClickX = -1;
     private double mouseClickY = -1;
 
+    /**
+     * Construye e inicializa el loop principal del juego.
+     * Configura el contexto gráfico, los manejadores de entrada y los listeners de mouse.
+     *
+     * @param canvas el canvas de JavaFX donde se renderiza el juego
+     * @param scene  la escena de JavaFX utilizada para capturar eventos de teclado y mouse
+     */
     public GameLoop(Canvas canvas, Scene scene) {
         this.gc    = canvas.getGraphicsContext2D();
         this.ancho = canvas.getWidth();
@@ -83,6 +90,13 @@ public class GameLoop extends AnimationTimer {
         });
     }
 
+    /**
+     * Método principal del loop llamado en cada frame por JavaFX.
+     * Calcula el delta de tiempo transcurrido y delega la lógica según el estado actual del juego.
+     * Al final de cada frame limpia las coordenadas del click del mouse.
+     *
+     * @param ahora timestamp actual en nanosegundos proporcionado por {@code AnimationTimer}
+     */
     @Override
     public void handle(long ahora) {
         if (tiempoAnterior < 0) { tiempoAnterior = ahora; return; }
@@ -101,7 +115,11 @@ public class GameLoop extends AnimationTimer {
         mouseClickY = -1;
     }
 
-
+    /**
+     * Maneja el estado de pantalla de créditos.
+     * Reproduce la música de créditos, renderiza la pantalla y gestiona
+     * los botones para reiniciar la partida o salir del juego.
+     */
     private void manejarCreditos() {
         MusicManager.getInstance().reproducir(MusicManager.Pista.CREDITOS);
         creditsScreen.actualizarMouse(mouseX, mouseY);
@@ -116,6 +134,11 @@ public class GameLoop extends AnimationTimer {
         }
     }
 
+    /**
+     * Maneja el estado del menú principal.
+     * Reproduce la música del menú, renderiza la pantalla y gestiona los botones
+     * para cambiar de idioma, iniciar una partida nueva o salir del juego.
+     */
     private void manejarMenu() {
         MusicManager.getInstance().reproducir(MusicManager.Pista.MENU);
         menuScreen.actualizarMouse(mouseX, mouseY);
@@ -132,6 +155,14 @@ public class GameLoop extends AnimationTimer {
         }
     }
 
+    /**
+     * Maneja la lógica principal del juego en cada frame mientras el estado es {@code JUGANDO}.
+     * Procesa el input del jugador, actualiza enemigos (incluyendo invocaciones del jefe),
+     * mueve proyectiles, resuelve colisiones, verifica cambios de sala y transiciones de estado
+     * (tienda, créditos, game over), y finalmente renderiza la escena y el HUD.
+     *
+     * @param delta tiempo en segundos transcurrido desde el último frame
+     */
     private void manejarJuego(double delta) {
         procesarInputJugador();
 
@@ -208,6 +239,11 @@ public class GameLoop extends AnimationTimer {
         hud.render(gc, jugador, dungeon, ancho, alto);
     }
 
+    /**
+     * Maneja el estado de la tienda.
+     * Renderiza la pantalla de la tienda y, si el jugador hace click en salir,
+     * regresa al estado {@code JUGANDO}.
+     */
     private void manejarTienda() {
         shopScreen.render(gc, jugador, ancho, alto);
         if (mouseClickX >= 0) {
@@ -216,6 +252,11 @@ public class GameLoop extends AnimationTimer {
         }
     }
 
+    /**
+     * Maneja el estado de Game Over.
+     * Renderiza la pantalla de derrota y gestiona los botones para
+     * reiniciar la partida o volver al menú principal.
+     */
     private void manejarGameOver() {
         gameOverScreen.actualizarMouse(mouseX, mouseY);                 // ← TUYO
         gameOverScreen.render(gc, ancho, alto);
@@ -229,7 +270,13 @@ public class GameLoop extends AnimationTimer {
         }
     }
 
-
+    /**
+     * Inicializa o reinicia una partida nueva.
+     * Configura el dungeon, el jugador, los proyectiles y la pantalla de tienda,
+     * calcula el spawn inicial del jugador en el centro de la sala y arranca la música del nivel.
+     *
+     * @param personaje nombre del personaje seleccionado para el jugador
+     */
     private void iniciarJuego(String personaje) {
         int colsSala  = (int)(ancho / Room.TILE_SIZE);
         int filasSala = (int)(alto  / Room.TILE_SIZE);
@@ -251,6 +298,12 @@ public class GameLoop extends AnimationTimer {
         System.out.println("¡Juego iniciado con " + personaje + "!");
     }
 
+    /**
+     * Procesa el input del teclado para mover al jugador y disparar proyectiles.
+     * Las teclas W/A/S/D controlan el movimiento y las teclas de flecha controlan
+     * la dirección de disparo. Solo dispara si el jugador no está atacando y su
+     * cadencia de disparo lo permite.
+     */
     private void procesarInputJugador() {
         double dx = 0, dy = 0;
         if (inputHandler.isKeyPressed(KeyCode.W)) dy = -1;
