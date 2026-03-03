@@ -9,7 +9,7 @@ public class Jugador extends GameCharacter {
     // Estado de ataque
     private boolean atacando = false;
     private int frameAtaque = 1;
-    private static final int FRAMES_ATAQUE = 5;
+    private static final int FRAMES_ATAQUE = 3;
     private static final int DURACION_FRAME = 5; // cuántos ticks dura cada frame
     private int contadorAtaque = 0;
     private int cooldownDisparo = 0;

@@ -161,7 +161,8 @@ public class GameRenderer {
 
             Direccion dir = SpriteManager.calcularDireccion(enemigo.getDx(), enemigo.getDy());
             String tipoSprite = enemigo.getClass().getSimpleName().toLowerCase();
-            Image frame = sprites.getFrame(tipoSprite, dir, frameActualEnemigo);
+            int frameParaEste = tipoSprite.equals("jefe") ? 0 : frameActualEnemigo;
+            Image frame = sprites.getFrame(tipoSprite, dir, frameParaEste);
 
             if (frame != null) {
                 gc.drawImage(frame, enemigo.getX(), enemigo.getY(), enemigo.getWidth(), enemigo.getHeight());
