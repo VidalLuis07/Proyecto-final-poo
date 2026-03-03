@@ -21,6 +21,12 @@ public class Dungeon {
     private final int colsSala;
     private final int filasSala;
 
+    /**
+     * Construye una nueva mazmorra y genera su mapa aleatorio.
+     *
+     * @param colsSala  número de columnas de tiles que tiene cada sala
+     * @param filasSala número de filas de tiles que tiene cada sala
+     */
     public Dungeon(int colsSala, int filasSala) {
         this.colsSala  = colsSala;
         this.filasSala = filasSala;
@@ -31,6 +37,11 @@ public class Dungeon {
         generarMapaAleatorio();
     }
 
+    /**
+     * Genera el mapa de la mazmorra de forma aleatoria.
+     * Crea entre 7 y 9 salas conectadas a partir de la sala inicial en el centro del grid,
+     * asigna los tipos especiales (TIENDA y JEFE), spawea enemigos y conecta las salas con puertas.
+     */
     private void generarMapaAleatorio() {
         Random rand = new Random();
 
@@ -109,6 +120,10 @@ public class Dungeon {
         System.out.println("¡Mazmorra generada con " + totalSalasObjetivo + " salas! (sala: " + colsSala + "x" + filasSala + ")");
     }
 
+    /**
+     * Recorre el grid de salas y crea puertas físicas entre cada par de salas adyacentes.
+     * Por cada conexión, también rompe 3 tiles de pared para que el jugador pueda pasar.
+     */
     private void conectarSalasConPuertas() {
         double tileSize = Room.TILE_SIZE;
         double offsetX = Room.getOffsetX();
@@ -170,6 +185,14 @@ public class Dungeon {
         }
     }
 
+    /**
+     * Spawea enemigos en la sala dada.
+     * En salas de tipo JEFE se genera un único {@code Jefe}; en el resto se generan
+     * entre 2 y 4 {@code Zombie}, posicionados en el 50% central de la sala.
+     *
+     * @param sala sala donde se spawnearán los enemigos
+     * @param rand instancia de {@code Random} para calcular posiciones y cantidades
+     */
     private void spawnearEnemigos(Room sala, Random rand) {
         int cantidad = sala.getTipo() == Room.TipoSala.JEFE ? 1 : rand.nextInt(3) + 2;
 
@@ -198,6 +221,13 @@ public class Dungeon {
         }
     }
 
+    /**
+     * Cambia la sala actual a la sala destino de la puerta cruzada y
+     * reposiciona al jugador en el lado opuesto de la entrada según la dirección.
+     *
+     * @param puertaCruzada la puerta que el jugador ha cruzado
+     * @param jugador       el jugador cuya posición será actualizada
+     */
     public void cambiarSala(Door puertaCruzada, Jugador jugador) {
         this.salaActual = puertaCruzada.getSalaDestino();
         String direccion = puertaCruzada.getPosicionBorde();
@@ -248,8 +278,31 @@ public class Dungeon {
         }
     }
 
+    /**
+     * Retorna el grid bidimensional de salas de la mazmorra.
+     *
+     * @return matriz de {@code Room} de dimensiones [COLUMNAS][FILAS]
+     */
     public Room[][] getGridSalas() { return gridSalas; }
+
+    /**
+     * Retorna la lista de todas las salas generadas en la mazmorra.
+     *
+     * @return lista de {@code Room}
+     */
     public List<Room> getTodasLasSalas() { return todasLasSalas; }
+
+    /**
+     * Retorna la sala en la que se encuentra actualmente el jugador.
+     *
+     * @return sala actual
+     */
     public Room getSalaActual() { return salaActual; }
+
+    /**
+     * Establece la sala actual del jugador.
+     *
+     * @param salaActual nueva sala actual
+     */
     public void setSalaActual(Room salaActual) { this.salaActual = salaActual; }
 }

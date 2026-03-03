@@ -21,16 +21,39 @@ public class Jugador extends GameCharacter {
     private double ultimaDirX = 0;
     private double ultimaDirY = 1; // por defecto mira al frente
 
+    /**
+     * Construye un jugador con posición, dimensiones, velocidad, vida máxima y sprite dados.
+     *
+     * @param x             posición inicial en el eje X
+     * @param y             posición inicial en el eje Y
+     * @param width         ancho del jugador en píxeles
+     * @param height        alto del jugador en píxeles
+     * @param velocidad     velocidad de movimiento del jugador
+     * @param vidaMaxima    cantidad máxima de vida del jugador
+     * @param nombreSprite  nombre del sprite a usar ({@code "carlos"} o {@code "carla"})
+     */
     public Jugador(double x, double y, double width, double height,
                    double velocidad, int vidaMaxima, String nombreSprite) {
         super(x, y, width, height, velocidad, vidaMaxima);
         this.nombreSprite = nombreSprite;
     }
 
+    /**
+     * Retorna el nombre del sprite asociado al jugador.
+     *
+     * @return nombre del sprite ({@code "carlos"} o {@code "carla"})
+     */
     public String getNombreSprite() {
         return nombreSprite;
     }
 
+    /**
+     * Actualiza el estado del jugador en cada frame.
+     * Guarda la última dirección de movimiento, reduce el cooldown de disparo
+     * y avanza la animación de ataque si está activa.
+     *
+     * @param delta tiempo en segundos transcurrido desde el último frame
+     */
     // actualizar la direccion
     @Override
     public void update(double delta) {
@@ -61,11 +84,25 @@ public class Jugador extends GameCharacter {
         super.update(delta);
     }
 
+    /**
+     * Indica si el jugador puede disparar, es decir, si el cooldown de disparo ha llegado a 0.
+     *
+     * @return {@code true} si el arma está lista; {@code false} si aún está en recarga
+     */
     // metodo para saber si el arma esta lista (cooldown)
     public boolean puedeDisparar() {
         return cooldownDisparo <= 0;
     }
 
+    /**
+     * Lanza un proyectil en la dirección indicada.
+     * Activa la animación de ataque, reinicia el cooldown y actualiza la dirección visual del sprite.
+     * El proyectil se genera centrado respecto al jugador y desplazado en la dirección de disparo.
+     *
+     * @param direccionX componente X de la dirección de disparo (-1, 0 o 1)
+     * @param direccionY componente Y de la dirección de disparo (-1, 0 o 1)
+     * @return el {@code Proyectiles} creado con el daño base actual del jugador
+     */
     // lanza una daga en la dirección indicada
     public Proyectiles disparar(double direccionX, double direccionY) {
         atacando = true;
@@ -91,19 +128,41 @@ public class Jugador extends GameCharacter {
         return new Proyectiles(balaX, balaY, 60, 60, 2.5, direccionX, direccionY, danoBase, true);
     }
 
-    //metodos para la tienda
+    /**
+     * Resta la cantidad indicada del dinero del jugador.
+     *
+     * @param cantidad monto a descontar
+     */
     public void restarDinero(int cantidad) {
         this.dinero -= cantidad;
     }
 
+    /**
+     * Aumenta la vida máxima y la vida actual del jugador en la cantidad indicada.
+     *
+     * @param cantidad puntos de vida máxima a agregar
+     */
     public void aumentarVidaMaxima(int cantidad) {
         this.vidaMaxima += cantidad;
         this.vidaActual += cantidad;
     }
 
+    /**
+     * Incrementa el daño base del jugador en la cantidad indicada.
+     *
+     * @param cantidad puntos de daño a agregar
+     */
     public void aumentarDano(int cantidad) {
         this.danoBase += cantidad;
     }
+
+    /**
+     * Retorna los límites de colisión (hitbox) del jugador.
+     * Se aplica un margen del 20% en cada lado para ajustar la hitbox
+     * al tamaño visual real del sprite.
+     *
+     * @return un {@code Rectangle2D} que representa la hitbox reducida del jugador
+     */
     // al igual que enemigo se actualiza la hitbox porque colisionan sin tocarse
     @Override
     public javafx.geometry.Rectangle2D getBounds() {
@@ -119,12 +178,45 @@ public class Jugador extends GameCharacter {
         );
     }
 
+    /**
+     * Retorna el dinero actual del jugador.
+     *
+     * @return cantidad de dinero
+     */
     public int getDinero() { return dinero; }
+
+    /**
+     * Suma la cantidad indicada al dinero del jugador.
+     *
+     * @param cantidad monto a agregar
+     */
     public void sumarDinero(int cantidad) { this.dinero += cantidad; }
 
-    // Getters para el render
+    /**
+     * Indica si el jugador está ejecutando una animación de ataque.
+     *
+     * @return {@code true} si está atacando; {@code false} en caso contrario
+     */
     public boolean isAtacando()    { return atacando; }
+
+    /**
+     * Retorna el frame actual de la animación de ataque.
+     *
+     * @return índice del frame de ataque actual
+     */
     public int getFrameAtaque()    { return frameAtaque; }
+
+    /**
+     * Retorna la última componente X de la dirección de movimiento o disparo del jugador.
+     *
+     * @return valor X de la última dirección
+     */
     public double getUltimaDirX()  { return ultimaDirX; }
+
+    /**
+     * Retorna la última componente Y de la dirección de movimiento o disparo del jugador.
+     *
+     * @return valor Y de la última dirección
+     */
     public double getUltimaDirY()  { return ultimaDirY; }
 }
