@@ -65,8 +65,10 @@ public class SpriteManager {
         cargarImagen("daga", "/assets/images/daga.png");
 
         // Enemigos (spritesheet único con 4 filas)
-        cargarSpritesheet("zombie", "/assets/images/chatFrente.png", 40, 40, 4);
-        cargarSpritesheet("boss",   "/assets/images/boss.png",   64, 64, 6);
+        cargarFilaDespritesheet("zombie", Direccion.FRENTE,    "/assets/images/chatFrente.png", 40, 40, 4);
+        cargarFilaDespritesheet("zombie", Direccion.IZQUIERDA, "/assets/images/chatFrente.png", 40, 40, 4);
+        cargarFilaDespritesheet("zombie", Direccion.DERECHA,   "/assets/images/chatFrente.png", 40, 40, 4);
+        cargarFilaDespritesheet("zombie", Direccion.ATRAS,     "/assets/images/chatFrente.png", 40, 40, 4);
 
         //MENU
         cargarImagen("menu_fondo",   "/assets/images/1.png");
