@@ -21,6 +21,10 @@ public class Jugador extends GameCharacter {
     private double ultimaDirX = 0;
     private double ultimaDirY = 1; // por defecto mira al frente
 
+    // Destello de daño
+    private int hurtTimer = 0;
+    private static final int DURACION_HURT = 10; // frames que dura el destello blanco
+
     /**
      * Construye un jugador con posición, dimensiones, velocidad, vida máxima y sprite dados.
      *
@@ -66,6 +70,11 @@ public class Jugador extends GameCharacter {
         // Reducir el tiempo de recarga en cada frame
         if (cooldownDisparo > 0) {
             cooldownDisparo--;
+        }
+
+        // Reducir el destello de daño
+        if (hurtTimer > 0) {
+            hurtTimer--;
         }
 
         // Avanzar animación de ataque
@@ -157,6 +166,20 @@ public class Jugador extends GameCharacter {
     }
 
     /**
+     * Recibe daño y activa el destello blanco de hurt.
+     *
+     * @param cantidad puntos de daño a aplicar
+     */
+    @Override
+    public void recibirDano(int cantidad) {
+        super.recibirDano(cantidad);
+        // Solo activar el destello si realmente recibió daño (no estaba invulnerable)
+        if (ticksInvulnerables == MAX_TICKS_INVULNERABLES) {
+            hurtTimer = DURACION_HURT;
+        }
+    }
+
+    /**
      * Retorna los límites de colisión (hitbox) del jugador.
      * Se aplica un margen del 20% en cada lado para ajustar la hitbox
      * al tamaño visual real del sprite.
@@ -198,6 +221,14 @@ public class Jugador extends GameCharacter {
      * @return {@code true} si está atacando; {@code false} en caso contrario
      */
     public boolean isAtacando()    { return atacando; }
+
+    /**
+     * Indica si el jugador debe mostrar el destello blanco de daño recibido.
+     * Parpadea en frames pares para dar efecto de invulnerabilidad clásico.
+     *
+     * @return {@code true} si debe dibujarse el destello blanco
+     */
+    public boolean isHurt()        { return hurtTimer > 0 && hurtTimer % 2 == 0; }
 
     /**
      * Retorna el frame actual de la animación de ataque.

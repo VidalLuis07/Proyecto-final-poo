@@ -146,8 +146,20 @@ public class GameRenderer {
         }
 
         if (frameToDraw != null) {
-            gc.drawImage(frameToDraw, jugador.getX(), jugador.getY(),
-                    jugador.getWidth(), jugador.getHeight());
+            if (jugador.isHurt()) {
+                // Buscar la versión blanca del frame actual
+                String claveHurt = jugador.getNombreSprite()
+                        + (jugador.isAtacando() ? "_ataque" : "")
+                        + "_" + dir.name()
+                        + "_" + (jugador.isAtacando() ? jugador.getFrameAtaque() : frameActualJugador)
+                        + "_hurt";
+                Image frameBlanco = sprites.getFrameHurt(claveHurt);
+                gc.drawImage(frameBlanco != null ? frameBlanco : frameToDraw,
+                        jugador.getX(), jugador.getY(), jugador.getWidth(), jugador.getHeight());
+            } else {
+                gc.drawImage(frameToDraw, jugador.getX(), jugador.getY(),
+                        jugador.getWidth(), jugador.getHeight());
+            }
         } else {
             gc.setFill(Color.CORNFLOWERBLUE);
             gc.fillRect(jugador.getX(), jugador.getY(),
@@ -181,7 +193,7 @@ public class GameRenderer {
                 double angulo = Math.toDegrees(Math.atan2(p.getDy(), p.getDx()));
                 gc.save();
                 gc.translate(p.getX() + p.getWidth()/2, p.getY() + p.getHeight()/2);
-                gc.rotate(angulo - 90);
+                gc.rotate(angulo + 90);
                 gc.drawImage(imgDaga, -p.getWidth()/2, -p.getHeight()/2, p.getWidth(), p.getHeight());
                 gc.restore();
             } else {

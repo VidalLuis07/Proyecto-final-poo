@@ -204,6 +204,14 @@ public class SpriteManager {
     }
 
     /**
+     * Devuelve la versión blanca (hurt) de un frame ya cacheado.
+     * La clave debe terminar en "_hurt".
+     */
+    public Image getFrameHurt(String claveHurt) {
+        return frameCache.getOrDefault(claveHurt, null);
+    }
+
+    /**
      * Devuelve una imagen estática (fondos, UI).
      */
     public Image getImagen(String nombre) {
@@ -250,11 +258,42 @@ public class SpriteManager {
                 );
                 String clave = nombre + "_" + dir.name() + "_" + col;
                 frameCache.put(clave, frame);
+
+                // Generar versión blanca automáticamente para sprites del jugador
+                if (nombre.equals("carlos") || nombre.equals("carla") ||
+                        nombre.equals("carlos_ataque") || nombre.equals("carla_ataque")) {
+                    frameCache.put(clave + "_hurt", generarVersionBlanca(frame, anchoCelda, altoCelda));
+                }
             }
             System.out.println("[SpriteManager] OK: " + nombre + " " + dir.name());
         } catch (Exception e) {
             System.err.println("[SpriteManager] ERROR: " + ruta + " → " + e.getMessage());
         }
+    }
+
+    /**
+     * Genera una copia de la imagen donde todos los píxeles no-transparentes
+     * se reemplazan por blanco puro, respetando el canal alpha original.
+     * Se usa para el efecto de destello al recibir daño.
+     */
+    private WritableImage generarVersionBlanca(WritableImage original, int ancho, int alto) {
+        WritableImage blanca = new WritableImage(ancho, alto);
+        javafx.scene.image.PixelReader reader = original.getPixelReader();
+        javafx.scene.image.PixelWriter writer = blanca.getPixelWriter();
+
+        for (int y = 0; y < alto; y++) {
+            for (int x = 0; x < ancho; x++) {
+                javafx.scene.paint.Color color = reader.getColor(x, y);
+                if (color.getOpacity() > 0.1) {
+                    // Píxel visible → volverlo blanco conservando el alpha
+                    writer.setColor(x, y, new javafx.scene.paint.Color(1, 1, 1, color.getOpacity()));
+                } else {
+                    // Píxel transparente → dejarlo transparente
+                    writer.setColor(x, y, javafx.scene.paint.Color.TRANSPARENT);
+                }
+            }
+        }
+        return blanca;
     }
 
     /**
